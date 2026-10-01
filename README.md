@@ -1,1 +1,156 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SecureReport | Briefing del proyecto</title><style>:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#e5edf7;background:#0b1220}body{margin:0;line-height:1.65}.wrap{max-width:1000px;margin:auto;padding:36px 22px 80px}header{padding:42px;border-radius:20px;background:linear-gradient(120deg,#172c49,#12385e);border:1px solid #285176}h1{font-size:clamp(2rem,5vw,3rem);margin:0}h2{margin-top:42px;color:#79d7eb}h3{color:#ccebf4}.tag{color:#9ee5b1;text-transform:uppercase;letter-spacing:.15em;font-size:.8rem}.lead{font-size:1.2rem;color:#d9e9f7}.card{background:#142236;border:1px solid #294059;border-radius:14px;padding:20px;margin:16px 0}table{width:100%;border-collapse:collapse;background:#142236}th,td{border:1px solid #294059;text-align:left;padding:12px;vertical-align:top}th{background:#1b3452}a{color:#81d6fb}code{background:#1d344d;padding:2px 5px;border-radius:4px}.flow{font-weight:700;color:#96dfbf}li{margin:8px 0}.note{border-left:4px solid #f3be65;padding:12px 18px;background:#282b37}footer{margin-top:48px;color:#9eb0c2;font-size:.9rem}@media(max-width:700px){.table-wrap{overflow-x:auto}header{padding:25px}th,td{min-width:150px}}@media print{:root{color:#171d27;background:white}header,.card,table,.note{color:#171d27;background:#f1f5f9}h2,h3{color:#14476d}a{color:#145d88}}</style></head><body><main class="wrap"><header><div class="tag">Briefing de proyecto · 1 de octubre de 2026</div><h1>SecureReport</h1><p class="lead">Revisión continua de seguridad para pymes mediante agentes Podman, informes claros y alertas accionables.</p></header><section><h2>Concepto y objetivo</h2><p>El cliente instala dos contenedores en una infraestructura expresamente autorizada. Estos descubren activos, analizan servicios y, si se habilita, observan tráfico de interfaces concretas. Una plataforma central procesa los resultados, los muestra en un portal privado y genera informes PDF periódicos.</p><p><strong>Posicionamiento:</strong> servicio de análisis continuo de exposición y vulnerabilidades. No sustituye una auditoría manual completa ni un pentest profesional.</p><div class="card"><strong>Cliente objetivo:</strong> pymes y startups sin equipo propio de ciberseguridad. <strong>Precio inicial a validar:</strong> 49–99 €/mes, sujeto a alcance, costes de soporte y pruebas con clientes.</div></section><section><h2>Recorrido del cliente</h2><ol><li>Conoce los servicios y planes en la web pública de la empresa.</li><li>Contrata, accede al portal privado y define redes, interfaces, horarios y límites autorizados.</li><li>Instala los dos contenedores Podman siguiendo instrucciones específicas para su entorno.</li><li>Consulta inventario, hallazgos y evolución en el dashboard; recibe PDF y avisos de Telegram.</li><li>Usa la mensajería del portal para dudas, seguimiento de incidencias y remediación.</li></ol></section><section><h2>Arquitectura</h2><div class="table-wrap"><table><thead><tr><th>Componente</th><th>Responsabilidad</th><th>Tecnologías orientativas</th></tr></thead><tbody><tr><td>Contenedor 1: red y tráfico</td><td>Descubrimiento de equipos, puertos y servicios; captura acotada y autorizada para obtener indicadores de tráfico.</td><td>Nmap; TShark o dumpcap de Wireshark.</td></tr><tr><td>Contenedor 2: análisis</td><td>Correlación de servicios, comprobaciones no destructivas y preparación de hallazgos con evidencia y confianza.</td><td>Python y herramientas adicionales seleccionadas según alcance.</td></tr><tr><td>API y base de datos</td><td>Recepción de resultados, autenticación, separación de clientes e histórico.</td><td>FastAPI, PostgreSQL.</td></tr><tr><td>Worker y automatización</td><td>Procesamiento, PDF, tareas programadas y flujos de aprobación y comunicación.</td><td>Workers, n8n, generador de PDF.</td></tr><tr><td>Web y notificaciones</td><td>Web comercial, portal privado, mensajería con clientes, dashboard, informes y avisos.</td><td>Frontend web, correo, bot de Telegram.</td></tr></tbody></table></div><p class="flow">Alcance autorizado → agentes → API → correlación y revisión → portal, PDF y alertas.</p><p>n8n coordina procesos, pero no reemplaza la lógica de seguridad del backend. Telegram avisa de que existe un hallazgo y dirige al cliente al portal; los detalles sensibles permanecen en el portal.</p></section><section><h2>IA e informes</h2><p>La IA puede agrupar duplicados, redactar explicaciones sencillas y sugerir prioridades basadas en evidencia. Los CVE y la confirmación de vulnerabilidades deben verificarse: una versión detectada por sí sola no siempre prueba que el sistema sea vulnerable. Los casos dudosos se etiquetan como pendientes de revisión.</p><p>El PDF semanal incluirá resumen ejecutivo, cambios respecto a la semana anterior, activos observados, hallazgos por gravedad y confianza, evidencia técnica, recomendaciones y estado de remediación. Una puntuación global, si se incluye, será orientativa y tendrá una fórmula documentada.</p></section><section><h2>Seguridad y límites</h2><div class="note"><strong>Corrección importante:</strong> no montar <code>/var/run/docker.sock</code> ni activar <code>--network host</code> por defecto. La captura de tráfico requiere permisos e interfaces concretas; instalar un contenedor en un servidor no permite ver automáticamente toda la red.</div><ul><li>Documentar autorización, rangos, horarios, exclusiones y responsable del cliente antes de escanear.</li><li>Aplicar mínimos privilegios y limitar CPU, memoria, velocidad de escaneo y retención.</li><li>Enviar resultados estructurados y metadatos mínimos, no capturas completas de paquetes por defecto.</li><li>Proteger la comunicación con TLS, controles de acceso por cliente y registros de auditoría.</li><li>Minimizar los datos personales o sensibles presentes en tráfico, IP, logs y mensajes.</li></ul></section><section><h2>Plan de desarrollo</h2><ol><li><strong>Fase 1 — MVP:</strong> laboratorio propio, contenedor 1, Nmap, alcance autorizado, API y almacenamiento.</li><li><strong>Fase 2 — Entrega:</strong> portal con acceso por cliente, informe PDF e histórico de escaneos.</li><li><strong>Fase 3 — Análisis:</strong> contenedor 2, comprobaciones contrastables, deduplicación y validación.</li><li><strong>Fase 4 — Comunicación:</strong> avisos por Telegram, mensajería web y flujos n8n.</li><li><strong>Fase 5 — Piloto:</strong> asistencia de IA con revisión humana y pruebas en 2–3 organizaciones autorizadas.</li></ol><p><strong>Propuesta breve:</strong> «SecureReport transforma revisiones técnicas periódicas de la infraestructura de una pyme en informes comprensibles y alertas que ayudan a corregir riesgos».</p></section><footer>Documento de definición preliminar. Precios, cobertura y tiempos son hipótesis del proyecto pendientes de validación.</footer></main></body></html>
+# 🛡️ SecureReport
+
+### Análisis continuo de seguridad para pymes
+
+SecureReport es un proyecto de plataforma que transforma el análisis técnico de una infraestructura en **hallazgos comprensibles, informes periódicos y alertas accionables**.
+
+La propuesta consiste en desplegar dos contenedores Podman en un entorno autorizado por el cliente. Estos identifican activos y servicios, realizan comprobaciones de seguridad y envían los resultados a una plataforma central. El cliente puede consultar la evolución de su infraestructura desde un portal privado, descargar informes PDF y recibir avisos relevantes por Telegram.
+
+> **Estado del proyecto:** fase de diseño. La arquitectura, las funcionalidades y los precios descritos son propuestas pendientes de implementación y validación.
+
+## 🎯 Objetivo
+
+Ayudar a pymes y startups sin un equipo especializado de ciberseguridad a responder tres preguntas:
+
+- ¿Qué dispositivos y servicios tenemos en nuestra infraestructura?
+- ¿Qué posibles riesgos se han detectado y con qué grado de confianza?
+- ¿Qué deberíamos corregir primero?
+
+SecureReport se plantea como un servicio de **análisis continuo de exposición y vulnerabilidades**. No sustituye una auditoría manual completa, un pentest profesional ni una certificación de cumplimiento.
+
+## 🧭 Funcionamiento previsto
+
+1. **Alta del cliente:** la organización accede al portal y define los activos, redes, interfaces y horarios autorizados.
+2. **Despliegue de agentes:** instala dos contenedores Podman con permisos ajustados a las funciones que realizará cada uno.
+3. **Recopilación y análisis:** los agentes descubren servicios y ejecutan comprobaciones no destructivas dentro del alcance acordado.
+4. **Procesamiento central:** la API recibe resultados estructurados; el backend los valida, correlaciona y prioriza.
+5. **Entrega de resultados:** el cliente consulta el dashboard, recibe informes PDF y obtiene avisos por Telegram cuando corresponde.
+6. **Seguimiento:** el portal permite revisar hallazgos, registrar avances y comunicarse con el equipo.
+
+## 🏗️ Arquitectura propuesta
+
+```text
+                 INFRAESTRUCTURA DEL CLIENTE
+           ┌──────────────────────────────────────┐
+           │ Contenedor 1: red y tráfico           │
+           │ Nmap · TShark / dumpcap               │
+           ├──────────────────────────────────────┤
+           │ Contenedor 2: análisis de seguridad   │
+           │ Comprobaciones · evidencia · hallazgos│
+           └──────────────────┬───────────────────┘
+                              │
+                      Comunicación protegida
+                              │
+                              ▼
+                  ┌─────────────────────────┐
+                  │ API central · FastAPI   │
+                  └────────────┬────────────┘
+                               │
+                     PostgreSQL + workers
+                               │
+                ┌──────────────┼──────────────┐
+                ▼              ▼              ▼
+          Portal privado   Informes PDF    n8n + Telegram
+          y mensajería     e histórico     y apoyo de IA
+```
+
+| Componente | Responsabilidad | Tecnologías propuestas |
+|---|---|---|
+| **Contenedor 1 · Sensor de red** | Descubrimiento de activos, puertos y servicios; obtención opcional de indicadores de tráfico. | Podman, Nmap, TShark/dumpcap |
+| **Contenedor 2 · Analizador** | Comprobaciones de seguridad no destructivas y preparación de hallazgos con evidencia. | Podman, Python y módulos de análisis |
+| **API y base de datos** | Recepción de resultados, autenticación, separación de clientes e histórico. | FastAPI, PostgreSQL |
+| **Procesamiento** | Correlación, deduplicación, priorización y generación de informes. | Workers y generador de PDF |
+| **Portal y comunicaciones** | Dashboard, informes, mensajería del cliente y notificaciones. | Web, correo, n8n y Telegram |
+
+## 🔎 Agentes de análisis
+
+### Contenedor 1: red y tráfico
+
+El primer contenedor utilizará **Nmap** para descubrir equipos, puertos y servicios dentro de los rangos autorizados. De forma opcional, podrá emplear **TShark o dumpcap** para obtener información de tráfico en interfaces concretas.
+
+La captura de tráfico no se activará por defecto. Su alcance dependerá de la ubicación del agente, los permisos disponibles y la autorización del cliente. Instalar el contenedor en un servidor **no implica poder observar toda la red**.
+
+### Contenedor 2: análisis de seguridad
+
+El segundo contenedor trabajará sobre los activos y servicios detectados para ejecutar comprobaciones adicionales de bajo impacto. Cada resultado deberá incluir:
+
+- Activo y servicio afectados.
+- Regla aplicada o referencia técnica.
+- Evidencia que respalda el hallazgo.
+- Severidad y grado de confianza.
+- Recomendación de corrección.
+- Estado de revisión o remediación.
+
+Una versión de software detectada puede sugerir un posible CVE, pero **no confirma por sí sola que el sistema sea vulnerable**. Los resultados dudosos se marcarán como pendientes de verificación.
+
+## 🤖 IA y automatización con n8n
+
+La IA se plantea como una herramienta de **apoyo al análisis**, no como autoridad final. Podrá ayudar a agrupar hallazgos repetidos, resumir evidencias y redactar recomendaciones claras para el cliente. Los resultados importantes o inciertos deberán poder revisarse antes de presentarse como confirmados.
+
+**n8n** coordinará procesos como la generación periódica de informes, las solicitudes de revisión y el envío de avisos. La lógica principal de seguridad, la autenticación y el control de permisos permanecerán en el backend.
+
+```text
+Nuevo hallazgo
+    → Validación y deduplicación
+    → Priorización
+    → Revisión si existe incertidumbre
+    → Publicación en el portal
+    → Aviso por Telegram, si procede
+    → Inclusión en el informe periódico
+```
+
+## 📊 Portal, mensajería e informes
+
+El proyecto contempla dos espacios web diferenciados:
+
+- **Web pública:** presentación de la empresa, explicación del servicio, planes y contacto.
+- **Portal privado:** acceso del cliente al dashboard, inventario, hallazgos, informes y mensajería con el equipo.
+
+El **informe PDF periódico** incluirá un resumen ejecutivo, cambios desde el informe anterior, hallazgos priorizados, evidencia técnica, recomendaciones y estado de remediación.
+
+Telegram servirá como **canal de aviso**, no como repositorio de información sensible. Por ejemplo, una notificación podrá indicar que se ha detectado un hallazgo de prioridad alta y dirigir al cliente al portal autenticado para consultar los detalles.
+
+## 🔐 Seguridad y límites
+
+El sistema debe construirse aplicando el principio de **mínimo privilegio** tanto a los agentes como a la plataforma central.
+
+- Escanear únicamente redes y activos con autorización expresa.
+- Definir horarios, límites de velocidad y exclusiones antes de ejecutar pruebas.
+- No montar `/var/run/docker.sock` ni usar `--network host` por defecto.
+- Limitar la captura a interfaces y permisos específicamente autorizados.
+- Enviar preferentemente resultados estructurados y metadatos mínimos, no capturas completas de paquetes.
+- Proteger la comunicación, las credenciales de los agentes y la separación de datos entre clientes.
+- Mantener trazabilidad de escaneos, cambios y accesos.
+- Definir políticas de conservación y tratamiento de los datos obtenidos.
+
+> **Importante:** SecureReport no debe presentarse como una garantía de ausencia de vulnerabilidades. Los escaneos automatizados tienen límites y pueden generar falsos positivos o no detectar determinados problemas.
+
+## 🚀 Roadmap
+
+| Fase | Objetivo | Entrega |
+|---|---|---|
+| **1 · Base técnica** | Demostrar el flujo completo en un laboratorio propio. | Nmap → API → PostgreSQL |
+| **2 · Primer producto** | Hacer consultables los resultados. | Portal privado, inventario e informe PDF |
+| **3 · Análisis** | Ampliar las comprobaciones sin perder calidad. | Segundo contenedor, evidencia, confianza y deduplicación |
+| **4 · Comunicación** | Automatizar el seguimiento del cliente. | Telegram, mensajería web y flujos n8n |
+| **5 · Validación** | Evaluar utilidad y seguridad reales. | IA supervisada y pilotos con organizaciones autorizadas |
+
+## 💼 Modelo de negocio propuesto
+
+| Plan | Precio orientativo | Enfoque |
+|---|---:|---|
+| **Starter** | 49 €/mes | Organizaciones pequeñas que necesitan inventario e informes periódicos. |
+| **Business** | 99 €/mes | Mayor cobertura, seguimiento más frecuente y alertas. |
+| **Enterprise / MSP** | Desde 299 €/mes | Varias sedes u organizaciones e integraciones acordadas. |
+
+Estos precios son **hipótesis**, no tarifas definitivas. Antes de comercializar el servicio será necesario validar la demanda, el coste de operación y soporte, los límites de cada plan y la calidad de los hallazgos.
+
+## 📌 Estado actual
+
+SecureReport se encuentra en **fase de definición**. El siguiente hito técnico es construir un laboratorio controlado y demostrar el recorrido completo:
+
+```text
+Escaneo autorizado → API → almacenamiento → hallazgo → informe
+```
+
+La prioridad inicial es obtener resultados fiables y explicables antes de añadir más herramientas o prometer una auditoría completa.
