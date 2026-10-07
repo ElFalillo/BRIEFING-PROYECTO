@@ -1,4 +1,4 @@
-# 🛡️ SecureReport
+# 🛡️ R3con
 
 ### Análisis continuo de seguridad para pymes
 
