@@ -161,7 +161,7 @@ La prioridad inicial es obtener resultados fiables y explicables antes de añadi
 
 
 <details>
-<summary><h2><b> 📅 PLANIFICACION DEL PROYECTO </b></h2></summary>
+<summary><h2><b> 📅 Planificacion del proyecto </b></h2></summary>
 
 # 🛡️ R3con — Planificación técnica del proyecto
 
