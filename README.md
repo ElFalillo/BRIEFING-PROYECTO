@@ -154,3 +154,5 @@ Escaneo autorizado → API → almacenamiento → hallazgo → informe
 ```
 
 La prioridad inicial es obtener resultados fiables y explicables antes de añadir más herramientas o prometer una auditoría completa.
+
+
