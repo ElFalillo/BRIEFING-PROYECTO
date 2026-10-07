@@ -1,4 +1,4 @@
-# 🛡️ R3con
+# 🛡️ R3CON
 
 ### Análisis continuo de seguridad para pymes
 
