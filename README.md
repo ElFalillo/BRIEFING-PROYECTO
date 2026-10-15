@@ -671,7 +671,7 @@ La prioridad será entregar este flujo de forma estable, documentada y reproduci
 ## ⚠️ Nota sobre seguridad y ética
 
 Todas las herramientas se usarán exclusivamente contra máquinas virtuales propias y redes creadas para el laboratorio. Cada exploración estará limitada mediante una política de alcance para impedir objetivos externos, argumentos arbitrarios o redes no autorizadas.
-
+</details>
 
 <details>
 <summary><h2><b> 📅 Planificación de arquitectura </b></h2></summary>
@@ -1119,3 +1119,4 @@ La planificación podrá considerarse cerrada cuando:
 ---
 
 > Documento preliminar elaborado a partir de las decisiones del equipo y de los requisitos de la actividad. Las propuestas no se presentarán como implementadas hasta disponer de pruebas y evidencias.
+</details>
