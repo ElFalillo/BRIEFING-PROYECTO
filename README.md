@@ -671,3 +671,451 @@ La prioridad será entregar este flujo de forma estable, documentada y reproduci
 ## ⚠️ Nota sobre seguridad y ética
 
 Todas las herramientas se usarán exclusivamente contra máquinas virtuales propias y redes creadas para el laboratorio. Cada exploración estará limitada mediante una política de alcance para impedir objetivos externos, argumentos arbitrarios o redes no autorizadas.
+
+
+<details>
+<summary><h2><b> 📅 Planificación de arquitectura </b></h2></summary>
+# 🛡️ R3con — Planificación de arquitectura
+
+> Trabajo Final de Ciclo de ASIX, perfil de ciberseguridad.  
+> Documento preliminar de arquitectura y planificación para la actividad M0379 / Proyecto.
+
+| Dato | Información |
+|---|---|
+| Proyecto | R3con |
+| Integrantes | Raúl Ortiz, Ricard Forero y Jam Arango |
+| Ciclo | ASIX, perfil de ciberseguridad |
+| Módulo | M0379 / Proyecto |
+| Fecha del documento | 15 de octubre de 2026 |
+| Entrega de esta actividad | 22 de octubre de 2026 |
+| Idioma | Español |
+| Estado | Planificación preliminar |
+| Formato de entrega | URL a la documentación compartida en GitHub |
+
+> ⚠️ Este documento recoge las decisiones del equipo y una propuesta de despliegue. Quedan pendientes la ubicación definitiva de Proxmox, los recursos físicos disponibles, las versiones instaladas, el direccionamiento final y las evidencias de funcionamiento.
+
+---
+
+## 🎯 1. Objetivo del proyecto
+
+R3con es un prototipo funcional de reconocimiento y análisis continuo de seguridad para infraestructuras autorizadas.
+
+Su finalidad es integrar conocimientos de administración de sistemas, redes, desarrollo web, bases de datos y ciberseguridad mediante un laboratorio controlado.
+
+Las funcionalidades previstas son:
+
+- Descubrir equipos, puertos y servicios con Nmap.
+- Obtener indicadores y metadatos de tráfico con TShark/Wireshark.
+- Detectar configuraciones que requieran revisión mediante reglas no destructivas.
+- Centralizar los resultados en una aplicación web con autenticación y roles.
+- Consultar activos, hallazgos e informes desde un dashboard.
+- Generar informes PDF periódicos.
+- Enviar alertas críticas mediante Telegram.
+- Automatizar procesos mediante n8n.
+- Incorporar MicroCloud como parte de la entrega final del proyecto.
+
+No se almacenarán capturas PCAP completas ni se analizarán redes externas.
+
+> R3con complementa el análisis técnico de una infraestructura. No se presenta como una herramienta de explotación ni como sustituto de una auditoría manual completa.
+
+---
+
+## ✅ 2. Decisiones confirmadas
+
+| Área | Decisión |
+|---|---|
+| Backend | Python + FastAPI |
+| Frontend | HTML, CSS y JavaScript |
+| Base de datos | MariaDB como tecnología propuesta |
+| Usuarios | Creados por el administrador, sin registro público |
+| Autenticación | Login real con contraseñas hasheadas y control de roles |
+| Informes | PDF reales generados por el sistema |
+| Alertas | Bot de Telegram |
+| Automatización | n8n como apoyo al backend |
+| Contenedores | Podman |
+| Documentación | GitHub colaborativo |
+| Idioma | Español |
+| IA | Ampliación posterior al funcionamiento del MVP |
+| MicroCloud | Debe funcionar para la entrega final; no es el objetivo inmediato de la actividad del 22 de octubre |
+| Disponibilidad | Entre 5 y 10 horas semanales indicadas por el equipo; pendiente concretar si son por persona o para el grupo |
+
+### Estado declarado del laboratorio
+
+El equipo confirma que las siguientes máquinas están creadas y configuradas:
+
+- `r3con-core`
+- `r3con-agent`
+- `target-web`
+
+Las direcciones IP, versiones instaladas y pruebas de conectividad se incorporarán a la documentación cuando se registren sus valores reales.
+
+---
+
+## 🖥️ 3. Aclaración sobre VirtualBox y Proxmox
+
+Es necesario concretar dónde se ejecutarán las máquinas de la entrega.
+
+Proxmox VE administra las máquinas virtuales y contenedores alojados en su propia infraestructura. No funciona como un panel de administración directa de máquinas que continúan ejecutándose en VirtualBox.
+
+| Caso | Entorno | Implicación |
+|---|---|---|
+| A | Proxmox instalado en otro equipo físico | Las VMs de la entrega se ejecutarán en ese servidor. VirtualBox quedará como laboratorio previo. |
+| B | Proxmox instalado dentro de una VM de VirtualBox | Las VMs se crearán dentro de Proxmox; habrá que verificar compatibilidad y recursos para virtualización anidada. |
+| C | Proxmox separado, pero las VMs siguen ejecutándose en VirtualBox | Será necesario revisar el diseño, porque esas VMs no estarán gestionadas directamente por Proxmox. |
+
+> No se eliminarán las máquinas actuales hasta confirmar el entorno definitivo y decidir cómo aprovechar el trabajo realizado.
+
+---
+
+## 🏗️ 4. Distribución propuesta de máquinas
+
+La actividad exige cuatro máquinas virtuales servidor separadas y una máquina cliente adicional.
+
+Para integrar las funciones de R3con se conservarán, además, el agente de análisis y el objetivo de pruebas.
+
+| Máquina | Función | Acción prevista |
+|---|---|---|
+| `r3con-web` | Servidor web, frontend y API FastAPI | Reutilizar la función de `r3con-core` y separar la base de datos si estuviera alojada allí |
+| `r3con-db` | Base de datos MariaDB | Crear una VM dedicada |
+| `r3con-net` | DNS y DHCP | Crear una VM dedicada |
+| `r3con-backup` | Copias de seguridad y pruebas de restauración | Crear una VM dedicada |
+| `r3con-client` | Cliente con navegador e IP asignada por DHCP | Crear una VM cliente |
+| `r3con-agent` | Agentes Podman y herramientas de análisis | Conservar la VM existente |
+| `target-web` | Objetivo autorizado para los análisis | Conservar la VM existente |
+
+### Gateway
+
+El gateway deberá proporcionar el enrutamiento y reenvío de puertos que solicita la actividad.
+
+Está pendiente confirmar si:
+
+- Lo proporciona el centro.
+- Se puede configurar en la infraestructura disponible.
+- Debe implementarse como una máquina virtual adicional.
+
+---
+
+## 🌐 5. Arquitectura lógica propuesta
+
+El siguiente esquema representa funciones y relaciones entre componentes. No es todavía la topología de red definitiva.
+
+```text
+Ordenador físico de demostración
+              │
+      Acceso por dominio
+              │
+              ▼
+Gateway / reenvío de puertos
+              │
+              ▼
+        r3con-web
+   ┌─────────────────────┐
+   │ Servidor web        │
+   │ Frontend            │
+   │ API FastAPI         │
+   └──────────┬──────────┘
+              │
+              ▼
+         r3con-db
+   ┌─────────────────────┐
+   │ MariaDB             │
+   │ Usuarios y roles    │
+   │ Activos y hallazgos │
+   │ Histórico           │
+   └─────────────────────┘
+
+Servicios de infraestructura
+├── r3con-net
+│   ├── DNS
+│   └── DHCP
+├── r3con-backup
+│   └── Copias y restauración
+└── r3con-client
+    └── Navegador e IP por DHCP
+
+Laboratorio de análisis R3con
+├── r3con-agent
+│   ├── Contenedor sensor
+│   └── Contenedor analizador
+└── target-web
+    └── Servicios de prueba autorizados
+```
+
+El diagrama definitivo deberá incluir:
+
+- Equipo físico e hipervisor.
+- Máquinas virtuales.
+- Interfaces de red.
+- Subredes.
+- Direcciones IP.
+- Gateway.
+- Reenvío de puertos.
+- Resolución DNS.
+- Separación entre elementos físicos y virtuales.
+
+---
+
+## 🧩 6. Componentes de software
+
+Estas tecnologías son decisiones propuestas. Las versiones exactas se anotarán después de comprobar las instalaciones.
+
+| Componente | Tecnología propuesta | Uso |
+|---|---|---|
+| Sistema operativo de servidores | Ubuntu Server | Alojamiento de servicios y aplicación |
+| Servidor web | Nginx | Publicación del frontend y acceso a la API |
+| Backend | Python + FastAPI | Autenticación, lógica de negocio y API |
+| Frontend | HTML, CSS y JavaScript | Portal de usuario y dashboard |
+| Base de datos | MariaDB | Persistencia de usuarios y resultados |
+| Contenedores | Podman | Ejecución de agentes |
+| Descubrimiento | Nmap | Identificación de equipos y servicios |
+| Análisis de tráfico | TShark/dumpcap | Obtención de metadatos autorizados |
+| Automatización | n8n | Flujos y notificaciones |
+| Alertas | Telegram Bot API | Avisos críticos y resúmenes |
+| Nube privada | MicroCloud | Integración para la entrega final |
+
+### Datos pendientes para completar la tabla tecnológica
+
+Para cada servicio se documentará:
+
+- Versión instalada.
+- Puerto de funcionamiento.
+- Interfaz o dirección donde escucha.
+- Dominio, si procede.
+- Justificación de uso.
+- Enlace a documentación oficial.
+
+---
+
+## 👥 7. Roles previstos
+
+| Rol | Funciones |
+|---|---|
+| Administrador R3con | Gestiona organizaciones, usuarios, agentes, políticas y configuración global |
+| Administrador cliente | Gestiona usuarios de su organización y consulta activos, hallazgos e informes |
+| Técnico cliente | Consulta resultados, añade comentarios y actualiza estados de hallazgos |
+
+La aplicación deberá comprobar tanto el rol como la organización del usuario antes de permitir acceso a datos o acciones.
+
+---
+
+## 🔐 8. Seguridad de la infraestructura
+
+### Firewall y mínimo privilegio
+
+- La base de datos solo aceptará conexiones de aplicación desde el servidor web/backend autorizado.
+- Las excepciones administrativas o de copias deberán justificarse y limitarse.
+- Solo se permitirán los puertos necesarios para cada servicio.
+- No se expondrá la base de datos directamente a la red real.
+- Se documentarán las reglas del firewall y sus pruebas.
+
+### Administración segura
+
+- Acceso SSH mediante claves.
+- Credenciales fuera del repositorio.
+- Archivos de ejemplo sin secretos reales.
+- Usuarios de base de datos con permisos limitados.
+- Consultas parametrizadas para prevenir inyección SQL.
+- Registro de operaciones relevantes.
+
+### Análisis autorizado
+
+- Rangos de escaneo definidos expresamente.
+- Sin argumentos de comandos libres introducidos desde la web.
+- Perfiles de análisis controlados.
+- Límites de tiempo y velocidad.
+- Sin escaneos de redes externas.
+- Sin almacenamiento de PCAP completos.
+
+---
+
+## 💾 9. Copias de seguridad
+
+La máquina `r3con-backup` se utilizará para almacenar las copias previstas del proyecto.
+
+El procedimiento deberá documentar:
+
+1. Qué información se copia.
+2. Desde qué servidor se obtiene.
+3. Cómo se ejecuta la copia.
+4. Dónde se almacena.
+5. Qué permisos protegen los archivos.
+6. Cuánto tiempo se conservan.
+7. Cómo se restaura una copia.
+
+> Una copia no se considerará validada únicamente por existir el archivo: deberá realizarse una restauración de prueba y registrar el resultado.
+
+---
+
+## 🧪 10. Hito de evaluación del 22 de octubre
+
+La primera demostración consistirá en publicar una web de prueba sobre la infraestructura diseñada.
+
+### Resultado objetivo
+
+```text
+Ordenador físico de clase
+        ↓
+Resolución del dominio personalizado
+        ↓
+Gateway y reenvío de puertos
+        ↓
+Servidor web
+        ↓
+Página de prueba R3con
+```
+
+También se comprobará el acceso desde la VM cliente, que deberá obtener su configuración de red mediante DHCP.
+
+Para esta fase no es necesario presentar todo el dashboard terminado. La prioridad es demostrar la infraestructura cliente-servidor y el acceso por dominio.
+
+### Evidencias que se deben recoger
+
+- Máquinas virtuales creadas.
+- Configuración de interfaces y direcciones.
+- Cliente obteniendo configuración por DHCP.
+- Resolución del dominio mediante el DNS del laboratorio.
+- Página de prueba accesible desde la VM cliente.
+- Página accesible por dominio desde una máquina física, si el entorno lo permite.
+- Reenvío de puertos configurado.
+- Conexión del backend con MariaDB.
+- Restricción de acceso a la base de datos.
+- Acceso SSH con claves.
+- Copia y restauración de prueba.
+
+---
+
+## 🗓️ 11. Calendario propuesto
+
+Las fechas siguientes son objetivos de trabajo, no evidencias de tareas realizadas.
+
+| Fecha | Resultado esperado | Responsable principal |
+|---|---|---|
+| 16 de octubre | Confirmar Proxmox, hardware, inventario y topología | Raúl y equipo |
+| 17–18 de octubre | Preparar VMs obligatorias y conectividad | Raúl |
+| 18–19 de octubre | Configurar DNS, DHCP y web de prueba desde cliente virtual | Raúl y Jam |
+| 19–20 de octubre | Separar MariaDB, probar backend y aplicar restricciones | Ricard |
+| 20–21 de octubre | Probar copias, restauración, SSH con claves y acceso desde equipo físico | Equipo |
+| 21 de octubre | Completar capturas, diagramas, documentación y ensayo | Equipo |
+| 22 de octubre | Entregar URL y realizar la demostración acordada | Equipo |
+
+### Trabajo en paralelo
+
+- Ricard: modelo E-R, backend y revisión documental.
+- Jam: mapa de navegación, wireframes y presentación de la web.
+- Raúl: infraestructura, red y documentación técnica.
+- Equipo: integración, pruebas y preparación de la defensa.
+
+---
+
+## 📚 12. Documentación pendiente de completar
+
+### Matriz de requisitos
+
+Se elaborará una tabla con los campos solicitados:
+
+| ID | Prioridad | Objetivo | Funcionalidad | Disparador | Fecha de entrega | Estado |
+|---|---|---|---|---|---|---|
+| Por definir | Alta / Media / Baja | Necesidad a cubrir | Solución concreta | Acción o tarea que la inicia | Fecha prevista | Activo / Pendiente / Cancelado |
+
+### Arquitectura tecnológica
+
+Se documentarán tecnologías, versiones, puertos, dominios y justificación de cada elección.
+
+### Base de datos
+
+El diseño E-R incluirá:
+
+- Tablas y campos.
+- Tipos y límites de datos.
+- Claves primarias y foráneas.
+- Cardinalidades.
+- Tablas intermedias para relaciones N:M cuando proceda.
+- Restricciones necesarias para conservar la integridad.
+
+### Interfaz
+
+Se prepararán:
+
+- Mapa de navegación.
+- Wireframes.
+- Roles y permisos.
+- Descripción de los elementos principales de cada pantalla.
+
+### Control de versiones
+
+El repositorio GitHub contendrá:
+
+- Código.
+- Documentación.
+- Diagramas.
+- Evidencias seleccionadas.
+- Manuales de instalación y pruebas.
+
+No se incluirán contraseñas, tokens, claves privadas ni archivos `.env` con secretos.
+
+---
+
+## ❓ 13. Información pendiente de confirmar
+
+| Punto | Información necesaria |
+|---|---|
+| Proxmox | Dónde está instalado y si ya se puede acceder a su interfaz |
+| Hardware | Procesador, RAM y espacio SSD disponible del equipo que alojará las VMs |
+| Dedicación | Si las 5–10 horas son por integrante o para el grupo |
+| VMs actuales | Sistema, versión e IP de `r3con-core`, `r3con-agent` y `target-web` |
+| Equipo de clase | Si se permite modificar su configuración DNS |
+| Gateway | Si lo proporciona el centro o debe crearse |
+| Reenvío de puertos | Quién puede configurar las reglas y en qué equipo |
+
+---
+
+## ☁️ 14. MicroCloud y ampliaciones
+
+MicroCloud se implementará para la entrega final del proyecto, después de estabilizar la infraestructura básica.
+
+No se condicionará el hito del 22 de octubre a su funcionamiento.
+
+La IA también se incorporará como ampliación posterior, siempre que el flujo principal ya permita:
+
+```text
+Análisis autorizado
+        ↓
+Recepción de resultados
+        ↓
+Persistencia en base de datos
+        ↓
+Consulta desde el dashboard
+        ↓
+Informe PDF
+        ↓
+Alerta por Telegram
+```
+
+---
+
+## 📌 15. Criterio de cierre de esta planificación
+
+La planificación podrá considerarse cerrada cuando:
+
+- [ ] Se confirme la infraestructura Proxmox.
+- [ ] Se conozcan los recursos físicos disponibles.
+- [ ] Se apruebe la distribución de VMs.
+- [ ] Se complete el direccionamiento y dominio.
+- [ ] Se documenten versiones y puertos.
+- [ ] Se termine la matriz de requisitos.
+- [ ] Se adjunte el modelo E-R.
+- [ ] Se adjunten el mapa de navegación y los wireframes.
+- [ ] Se registren las pruebas y evidencias de infraestructura.
+- [ ] Se ensaye el acceso por dominio para la demostración.
+
+---
+
+## 📖 16. Base documental
+
+- Enunciado: `A3-ArquitecturaSW.docx.pdf`, actividad de Arquitectura del Software, M0379 / Proyecto.
+- [Guía de administración de Proxmox VE](https://pve.proxmox.com/pve-docs/pve-admin-guide.html).
+- [Proxmox VE dentro de VirtualBox](https://pve.proxmox.com/wiki/Proxmox_VE_inside_VirtualBox).
+
+---
+
+> Documento preliminar elaborado a partir de las decisiones del equipo y de los requisitos de la actividad. Las propuestas no se presentarán como implementadas hasta disponer de pruebas y evidencias.
