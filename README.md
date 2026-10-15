@@ -674,7 +674,7 @@ Todas las herramientas se usarán exclusivamente contra máquinas virtuales prop
 </details>
 
 <details>
-<summary><h2><b> 📅 Planificación de arquitectura </b></h2></summary>
+<summary><h2><b> 📌 Planificación de arquitectura </b></h2></summary>
 # 🛡️ R3con — Planificación de arquitectura
 
 > Trabajo Final de Ciclo de ASIX, perfil de ciberseguridad.  
