@@ -2,7 +2,7 @@
   <img
     src="capturas/R3CON_animado.gif"
     alt="R3CON"
-    width="1200"
+    width="800"
   />
 </p>
 <details>
