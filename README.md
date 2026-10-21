@@ -1,6 +1,6 @@
 <p align="center">
   <img
-    src=""
+    src="capturas/R3CON_animado.gif"
     alt="R3CON"
     width="1200"
   />
