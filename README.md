@@ -1,3 +1,10 @@
+<p align="center">
+  <img
+    src=""
+    alt="R3CON"
+    width="1200"
+  />
+</p>
 <details>
 <summary><h2><b> 💡Idea Proyecto </b></h2></summary>
 
