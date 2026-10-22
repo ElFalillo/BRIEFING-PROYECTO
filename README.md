@@ -1131,7 +1131,6 @@ La planificación podrá considerarse cerrada cuando:
 
 <details>
 <summary><h2><b> 🎨 Diseño UX/UI y wireframes de R3con </b></h2></summary>
-# Diseño de interfaces y wireframes de R3con
 
 ## 1. Introducción
 
