@@ -1127,3 +1127,664 @@ La planificación podrá considerarse cerrada cuando:
 
 > Documento preliminar elaborado a partir de las decisiones del equipo y de los requisitos de la actividad. Las propuestas no se presentarán como implementadas hasta disponer de pruebas y evidencias.
 </details>
+
+
+<details>
+<summary><h2><b> 💡Idea Proyecto </b></h2></summary>
+# Diseño de interfaces y wireframes de R3con
+
+## 1. Introducción
+
+Durante la fase de diseño de R3con se elaboraron wireframes de baja y alta fidelidad para definir la estructura, la distribución de los elementos y la navegación de la aplicación antes de su implementación.
+
+El trabajo se dividió en dos espacios:
+
+- Web corporativa pública: presentación de la empresa, servicios y contacto.
+- Área personal del cliente: consulta del calendario, informes, hallazgos e historial.
+
+También se diseñó la pantalla de acceso y se elaboró un mapa de navegabilidad.
+
+> Los wireframes representan una propuesta de diseño. No implican que todas las funcionalidades estén implementadas o conectadas con el backend.
+
+---
+
+## 2. Objetivos del diseño
+
+Los objetivos principales fueron:
+
+- Definir la estructura visual de las pantallas.
+- Organizar la información de forma clara.
+- Diferenciar la web pública del área personal del cliente.
+- Establecer los recorridos de navegación.
+- Mantener una identidad visual coherente.
+- Facilitar la posterior implementación de la interfaz.
+- Revisar la distribución antes de desarrollar las funcionalidades.
+
+La web pública se orientó a explicar la propuesta de R3con: reconocimiento de activos, visibilidad de servicios y análisis de la superficie de exposición en entornos autorizados.
+
+---
+
+## 3. Evolución del proceso de diseño
+
+### 3.1. Referencia inicial
+
+Se partió de una captura con esquemas visuales sencillos que mostraban la distribución de diferentes pantallas.
+
+Esta referencia permitió identificar los elementos básicos:
+
+- Cabecera.
+- Logotipo.
+- Menús de navegación.
+- Bloques de contenido.
+- Botones.
+- Formularios.
+- Tarjetas.
+- Pie de página.
+
+### 3.2. Definición de la web corporativa
+
+Se concretó que la web pública debía presentar la empresa y sus servicios, sin confundirse con una consola técnica o un dashboard.
+
+Se definieron las siguientes páginas:
+
+1. Inicio.
+2. Servicios.
+3. Detalle de servicio.
+4. Sobre nosotros.
+5. Contacto.
+
+Posteriormente se añadió la pantalla de Login.
+
+### 3.3. Exploración visual
+
+Durante las primeras iteraciones se exploraron diseños de escritorio y móvil, así como una dirección visual basada en azul marino oscuro y turquesa.
+
+Después se ajustó el alcance:
+
+- Solo formato PC.
+- Colores granate y azul marino.
+- Incorporación del logotipo de R3con.
+- Menos texto definitivo y mayor protagonismo de la estructura visual.
+
+Las versiones móviles y la paleta turquesa quedaron como propuestas exploratorias, no como la entrega final seleccionada.
+
+### 3.4. Simplificación de la baja fidelidad
+
+La baja fidelidad se simplificó a partir de una nueva referencia aportada.
+
+Se eliminaron colores de marca, detalles decorativos y textos visibles de la web pública. La estructura pasó a representarse mediante cajas, líneas y óvalos.
+
+### 3.5. Diseño del área personal del cliente
+
+Una vez definida la web pública y el login, se incorporó un dashboard independiente para el cliente.
+
+Se diseñaron cinco vistas:
+
+- Resumen.
+- Calendario.
+- Informes.
+- Hallazgos.
+- Historial.
+
+---
+
+## 4. Wireframes de baja fidelidad
+
+### 4.1. Finalidad
+
+Los wireframes de baja fidelidad se utilizaron para representar el esqueleto de las pantallas.
+
+Su objetivo fue revisar:
+
+- La posición de los elementos.
+- La distribución del espacio.
+- La jerarquía de la información.
+- La ubicación de los accesos principales.
+- La relación entre los bloques.
+
+### 4.2. Características
+
+La versión final de baja fidelidad utiliza:
+
+- Fondo claro.
+- Líneas finas en gris.
+- Rectángulos para contenedores, tarjetas, campos e imágenes.
+- Líneas horizontales para representar texto.
+- Óvalos o formas sencillas para los botones.
+- Ausencia de sombras y decoración.
+- Ausencia de colores corporativos.
+- Marcadores de posición para el logotipo.
+
+En las pantallas públicas se evitó el texto visible para mantener un esquema muy simple.
+
+En el dashboard se conservaron los nombres del menú y los accesos de sección para facilitar la identificación de las vistas.
+
+---
+
+## 5. Wireframes de alta fidelidad
+
+### 5.1. Finalidad
+
+Los wireframes de alta fidelidad se elaboraron para mostrar una propuesta visual más cercana a la interfaz prevista.
+
+Se definieron:
+
+- Colores.
+- Tipografía de referencia.
+- Logotipo.
+- Botones.
+- Formularios.
+- Tarjetas.
+- Tablas.
+- Estados visuales.
+- Navegación activa.
+
+No se incorporaron todos los textos definitivos de la web. En varios bloques se utilizaron líneas y marcadores para representar contenido pendiente.
+
+### 5.2. Identidad visual
+
+| Elemento | Valor de referencia |
+| --- | --- |
+| Azul marino | `#082A49` |
+| Granate | `#7C1730` |
+| Fondo claro | `#F3F5F8` |
+| Tipografía | Inter, con Arial o sans-serif como alternativa |
+| Estilo | Tecnológico, corporativo y sobrio |
+
+El azul marino se utilizó en títulos y zonas estructurales.
+
+El granate se aplicó a botones, acciones principales y elementos activos.
+
+Las superficies claras ayudaron a separar los bloques de información.
+
+### 5.3. Logotipo
+
+Se incorporó el logotipo proporcionado para R3con.
+
+En los SVG de alta fidelidad, el logo se incrustó como imagen para conservar su aspecto original.
+
+> El logotipo incrustado no se vectorizó: sigue siendo una imagen dentro del archivo SVG.
+
+---
+
+## 6. Comparación entre baja y alta fidelidad
+
+| Aspecto | Baja fidelidad | Alta fidelidad |
+| --- | --- | --- |
+| Objetivo | Revisar estructura y distribución | Representar la apariencia propuesta |
+| Colores | Blanco y gris | Granate, azul marino y fondos claros |
+| Texto | Líneas y marcadores | Etiquetas funcionales y contenido de ejemplo |
+| Logotipo | Recuadro de posición | Logo de R3con |
+| Botones | Formas simples | Botones con estilo corporativo |
+| Componentes | Cajas y líneas | Tarjetas, tablas, campos y estados visuales |
+| Navegación en SVG | Estática | Estática |
+
+---
+
+## 7. Pantallas de la web pública
+
+### 7.1. Inicio
+
+La página de Inicio reúne los accesos a la información principal de R3con.
+
+La propuesta de alta fidelidad contempla:
+
+- Cabecera con logotipo.
+- Menú de navegación.
+- Bloque principal de presentación.
+- Botones de acceso a servicios y contacto.
+- Propuesta de valor.
+- Servicios destacados.
+- Metodología.
+- Ejemplo conceptual de informe.
+- Presentación de la empresa.
+- Preguntas frecuentes.
+- Llamada a contacto.
+- Pie de página.
+
+La baja fidelidad final presenta una composición resumida de la estructura, sin reproducir todos los contenidos de la versión larga.
+
+### 7.2. Servicios
+
+La página de Servicios presenta cuatro áreas propuestas:
+
+1. Reconocimiento de activos.
+2. Identificación de servicios expuestos.
+3. Análisis de superficie de exposición.
+4. Informes y recomendaciones técnicas.
+
+Cada servicio se representa mediante una tarjeta con acceso a su detalle.
+
+> Los servicios y sus capacidades deben validarse con el equipo del proyecto antes de publicarse como oferta definitiva.
+
+### 7.3. Detalle de servicio
+
+Se diseñó una plantilla reutilizable para explicar cada servicio.
+
+Sus bloques son:
+
+- Qué es.
+- Para quién está pensado.
+- Qué incluye.
+- Qué queda fuera del alcance.
+- Cómo se desarrolla.
+- Qué se entrega.
+- Llamada a contacto.
+
+La pantalla utilizada como referencia corresponde a Reconocimiento de activos.
+
+Los otros servicios pueden reutilizar la distribución, pero necesitan contenido específico validado.
+
+### 7.4. Sobre nosotros
+
+Esta página presenta el enfoque de R3con.
+
+La estructura contempla:
+
+- Presentación de la empresa.
+- Espacio para el logotipo o un recurso visual.
+- Trabajo en entornos autorizados.
+- Comunicación clara.
+- Rigor técnico.
+- Documentación comprensible.
+- Acceso a Contacto.
+
+No se añadieron clientes, certificaciones, integrantes del equipo ni cifras comerciales inventadas.
+
+### 7.5. Contacto
+
+La página de Contacto incluye una zona informativa y un formulario.
+
+| Campo | Condición prevista |
+| --- | --- |
+| Nombre | Obligatorio |
+| Empresa | Opcional |
+| Correo electrónico | Obligatorio |
+| Mensaje | Obligatorio |
+| Aceptación de privacidad | Obligatoria y sin marcar inicialmente |
+
+La acción principal es «Enviar consulta».
+
+No se solicitan contraseñas, credenciales ni información técnica sensible en este formulario.
+
+En el prototipo inicial de la web pública se exploraron:
+
+- Validación de campos.
+- Estado de envío.
+- Error de envío.
+- Confirmación simulada.
+
+> El formulario del prototipo no envía ni almacena datos.
+
+---
+
+## 8. Pantalla de Login
+
+Se diseñó una pantalla de acceso en baja y alta fidelidad.
+
+### 8.1. Baja fidelidad
+
+Incluye:
+
+- Recuadro para el logotipo.
+- Dos campos.
+- Botón de acceso esquemático.
+
+### 8.2. Alta fidelidad
+
+Incluye:
+
+- Logotipo de R3con.
+- Campo de correo electrónico.
+- Campo de contraseña.
+- Botón «Iniciar sesión».
+- Enlace «Volver a Inicio».
+
+Tras incorporar el área personal del cliente, se definió Resumen como el destino propuesto después de una autenticación correcta.
+
+> El login diseñado es una maqueta. La autenticación, la creación de sesión y la autorización quedan pendientes de implementación.
+
+---
+
+## 9. Dashboard personal del cliente
+
+### 9.1. Estructura general
+
+El dashboard utiliza un menú lateral izquierdo común a todas las vistas.
+
+Las opciones son:
+
+1. Resumen.
+2. Calendario.
+3. Informes.
+4. Hallazgos.
+5. Historial.
+
+El menú mantiene su posición y destaca la sección activa.
+
+También se contemplan accesos visuales para:
+
+- Volver a la web.
+- Cerrar sesión.
+
+Estas dos acciones no están conectadas a una aplicación real en el prototipo.
+
+### 9.2. Resumen
+
+Resumen es la pantalla de entrada propuesta al área personal.
+
+Presenta indicadores ilustrativos y versiones pequeñas de las otras secciones:
+
+| Módulo | Función |
+| --- | --- |
+| Calendario | Mostrar una vista reducida del calendario y próximas actividades |
+| Informes | Mostrar una selección de informes |
+| Hallazgos | Mostrar observaciones pendientes de revisión |
+| Historial | Mostrar actividad reciente |
+
+Al pulsar una tarjeta, se abre la sección correspondiente en grande.
+
+El usuario también puede cambiar de vista mediante el menú lateral.
+
+### 9.3. Calendario
+
+La vista ampliada incluye:
+
+- Calendario principal.
+- Días destacados.
+- Agenda lateral.
+- Referencias visuales a actividades.
+- Controles de navegación de ejemplo.
+
+El calendario es conceptual y no está asociado a un mes real ni a eventos de un cliente.
+
+Los controles para cambiar de mes son elementos visuales, no funcionales.
+
+### 9.4. Informes
+
+La vista de Informes representa un listado con:
+
+- Referencia.
+- Nombre.
+- Estado.
+- Acciones de consulta o descarga.
+
+También se incluyen espacios para búsqueda y filtrado.
+
+La búsqueda, los filtros y las descargas no están conectados a documentos reales.
+
+### 9.5. Hallazgos
+
+La vista de Hallazgos incluye una tabla con:
+
+- Referencia.
+- Observación.
+- Prioridad.
+- Estado.
+
+Se utilizan ejemplos de estructura, no vulnerabilidades reales.
+
+La prioridad se presenta como «Por valorar» para no atribuir una severidad técnica sin evaluación.
+
+### 9.6. Historial
+
+La vista de Historial representa una secuencia de actividad del proyecto.
+
+Los ejemplos incluyen:
+
+- Incorporación de informes.
+- Programación de revisiones.
+- Cambios en el alcance.
+- Registro de consultas.
+- Creación del proyecto.
+
+No se trata de un registro de auditoría implementado ni conectado con una base de datos.
+
+---
+
+## 10. Mapa de navegabilidad
+
+Se elaboró un mapa sencillo que utiliza únicamente títulos de pantallas y flechas.
+
+### 10.1. Web pública
+
+    Inicio
+    ├── Servicios
+    │   └── Detalle de servicio
+    │       └── Contacto
+    ├── Sobre nosotros
+    │   └── Contacto
+    ├── Contacto
+    └── Login
+
+Metodología se plantea como una sección de Inicio, no como una página independiente.
+
+### 10.2. Destino de los accesos principales
+
+| Elemento | Destino propuesto |
+| --- | --- |
+| Logotipo | Inicio |
+| Solicitar información | Contacto |
+| Contactar | Contacto |
+| Explorar servicios | Servicios |
+| Ver servicio | Detalle del servicio seleccionado |
+| Conocer R3con | Sobre nosotros |
+| Acceder | Login |
+| Volver a Inicio | Inicio |
+
+### 10.3. Área personal del cliente
+
+    Login
+    └── Autenticación correcta
+        └── Resumen
+            ├── Calendario
+            ├── Informes
+            ├── Hallazgos
+            └── Historial
+
+Desde cualquiera de las vistas del dashboard se puede acceder a las demás mediante el menú lateral.
+
+La acción «Cerrar sesión» deberá invalidar la sesión y devolver al login cuando se implemente el backend.
+
+El mapa visual sencillo se elaboró antes del dashboard. La conexión con el área privada queda documentada como una ampliación de ese mapa.
+
+---
+
+## 11. Formatos y dimensiones
+
+La entrega final seleccionada se centró en PC.
+
+| Diseño | Dimensiones de referencia |
+| --- | --- |
+| Web pública de alta fidelidad | 1440 px de ancho y altura variable |
+| Web pública de baja fidelidad final | 1440 × 900 px |
+| Login | 1440 × 900 px |
+| Dashboard | 1440 × 1000 px |
+
+Durante la exploración inicial se generaron versiones móviles, pero no forman parte de la propuesta final seleccionada.
+
+### Formatos generados
+
+- SVG: pantallas y mapas editables como elementos vectoriales.
+- ZIP: agrupación de los archivos entregados.
+- PDF: consulta y revisión de determinadas pantallas.
+- HTML, CSS y JavaScript: prototipos para explorar navegación y algunos estados.
+
+---
+
+## 12. Uso de los diseños en Figma
+
+El procedimiento previsto para trabajar con los archivos es:
+
+1. Descargar y descomprimir el paquete.
+2. Abrir el archivo de Figma Design.
+3. Arrastrar los SVG al lienzo.
+4. Organizar las pantallas por secciones.
+5. Revisar las capas y el tratamiento del texto.
+6. Crear componentes reutilizables si es necesario.
+7. Configurar las conexiones del prototipo.
+
+### Limitaciones de los archivos entregados
+
+- No son archivos `.fig`.
+- No contienen Auto Layout configurado.
+- No incluyen variantes o variables nativas de Figma.
+- No incluyen conexiones de prototipo de Figma.
+- El tratamiento del texto debe comprobarse después de importar.
+- El logotipo sigue siendo una imagen incrustada.
+
+Los SVG son estáticos. Las interacciones del prototipo HTML no se trasladan automáticamente a Figma.
+
+---
+
+## 13. Prototipos e interacciones
+
+### 13.1. Prototipo de la web pública
+
+En el prototipo inicial se incluyeron:
+
+- Navegación entre páginas públicas.
+- Menú móvil de la propuesta exploratoria.
+- Acordeones de preguntas frecuentes.
+- Validación del formulario.
+- Simulación de envío correcto y error.
+
+No se implementó un envío real del formulario.
+
+### 13.2. Prototipo del dashboard
+
+Se preparó un prototipo HTML para probar:
+
+- Cambio de vista desde el menú lateral.
+- Apertura de las secciones desde las tarjetas de Resumen.
+- Identificación visual de la sección activa.
+
+### 13.3. Funciones no implementadas
+
+Los siguientes elementos se mantienen como parte visual o propuesta funcional:
+
+- Autenticación real.
+- Autorización por cliente.
+- Conexión con datos de una cuenta.
+- Consulta y descarga real de informes.
+- Búsqueda.
+- Filtros.
+- Gestión de eventos del calendario.
+- Persistencia del historial.
+- Cierre de sesión.
+- Envío real del formulario de contacto.
+
+> Todos los datos del dashboard son ilustrativos. No representan información de clientes ni resultados de evaluaciones reales.
+
+---
+
+## 14. Accesibilidad y validación
+
+Durante la definición del diseño se contemplaron:
+
+- Legibilidad.
+- Jerarquía visual.
+- Etiquetas persistentes en formularios.
+- Estados comprensibles.
+- Foco visible en los prototipos HTML.
+- Navegación con teclado.
+- Distinción de estados mediante algo más que el color.
+
+No se ha realizado una auditoría completa de accesibilidad ni se afirma conformidad con WCAG.
+
+Antes de publicar deben revisarse:
+
+- Contraste de textos, iconos, bordes y estados.
+- Orden y visibilidad del foco.
+- Navegación completa con teclado.
+- Lectura de formularios y mensajes de error.
+- Uso con lector de pantalla.
+- Comportamiento con zoom.
+- Desbordamiento y adaptación a distintos tamaños.
+- Textos legales y tratamiento de datos.
+
+---
+
+## 15. Inventario de pantallas
+
+| Zona | Pantallas | Baja fidelidad | Alta fidelidad |
+| --- | --- | --- | --- |
+| Web pública y acceso | Inicio, Servicios, Detalle de servicio, Sobre nosotros, Contacto y Login | 6 | 6 |
+| Área del cliente | Resumen, Calendario, Informes, Hallazgos e Historial | 5 | 5 |
+| Total | 11 vistas representadas en dos niveles | 11 | 11 |
+
+La propuesta final contiene 22 pantallas de referencia.
+
+Este recuento no incluye:
+
+- Iteraciones descartadas.
+- Diseños móviles exploratorios.
+- Mapas de navegabilidad.
+- Bibliotecas de componentes.
+- Vistas conjuntas.
+- Copias en PDF.
+
+Los servicios comparten una plantilla de detalle y no se cuentan como cuatro diseños independientes.
+
+---
+
+## 16. Organización propuesta del repositorio
+
+La siguiente estructura permite separar la documentación, los wireframes y los prototipos:
+
+    docs/
+    ├── diseno-ux-ui.md
+    ├── wireframes/
+    │   ├── baja-fidelidad/
+    │   │   ├── web-publica/
+    │   │   └── dashboard-cliente/
+    │   └── alta-fidelidad/
+    │       ├── web-publica/
+    │       └── dashboard-cliente/
+    ├── navegacion/
+    │   └── mapa-navegabilidad.svg
+    └── prototipos/
+        └── dashboard-cliente/
+            └── prototipo-dashboard.html
+
+Los archivos de Login pueden guardarse junto con las pantallas públicas.
+
+Las propuestas anteriores pueden conservarse en una carpeta de iteraciones, diferenciándolas de la versión seleccionada.
+
+Esta estructura es una propuesta de organización, no una confirmación de que los archivos ya estén subidos al repositorio.
+
+---
+
+## 17. Tareas pendientes
+
+- [ ] Revisar y aprobar los diseños con el equipo.
+- [ ] Validar los servicios y sus contenidos.
+- [ ] Completar los textos definitivos.
+- [ ] Validar los documentos legales.
+- [ ] Consolidar las pantallas seleccionadas en Figma.
+- [ ] Crear componentes reutilizables.
+- [ ] Configurar Auto Layout donde corresponda.
+- [ ] Conectar las pantallas mediante el prototipo de Figma.
+- [ ] Actualizar el mapa visual con el área del cliente.
+- [ ] Implementar la interfaz.
+- [ ] Conectar el login con el backend.
+- [ ] Aplicar control de acceso a los datos de cada cliente.
+- [ ] Conectar calendario, informes, hallazgos e historial.
+- [ ] Implementar descargas autorizadas.
+- [ ] Conectar el formulario de contacto.
+- [ ] Implementar el cierre de sesión.
+- [ ] Realizar pruebas funcionales.
+- [ ] Revisar usabilidad y accesibilidad.
+
+---
+
+## 18. Resultado de la fase de diseño
+
+La fase de diseño permitió definir una propuesta coherente para la web pública y el área personal del cliente.
+
+Los wireframes de baja fidelidad facilitaron la revisión de la estructura. Los de alta fidelidad concretaron la identidad visual y la distribución de los componentes.
+
+Los prototipos HTML permitieron explorar algunas interacciones, especialmente la navegación entre las vistas del dashboard, sin sustituir la implementación funcional de la aplicación.
+
+Esta documentación recoge el trabajo de diseño realizado durante el proceso de prototipado. No supone una revisión del estado actual del código ni confirma que las funcionalidades estén implementadas en el repositorio.
+</details>
