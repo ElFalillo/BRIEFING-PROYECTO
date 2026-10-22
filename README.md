@@ -1,4 +1,4 @@
-<p align="center">
+p align="center">
   <img
     src="capturas/R3CON_animado.gif"
     alt="R3CON"
