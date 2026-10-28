@@ -1773,6 +1773,48 @@ Esta documentación recoge el trabajo de diseño realizado durante el proceso de
 <summary><h2><b> Infraestructura de Red </b></h2></summary>
 <img width="3200" height="2220" alt="Arquitecturadered" src="https://github.com/user-attachments/assets/069c8c9b-ee46-483e-bc2f-0427232295a6" />
 
+Justificación de la arquitectura de red
+
+La red del laboratorio se ha diseñado con cuatro redes internas separadas por función, detrás de un gateway basado en iptables, todo virtualizado sobre un único PC del aula con Proxmox VE. A continuación se explican las decisiones principales, listas para adaptar a la memoria.
+
+1. Un único servidor Proxmox dedicado
+
+Se ha usado un PC de clase como servidor dedicado, siempre encendido y sin uso directo. Esto permite virtualizar toda la plataforma (gateway, servidores, clientes y laboratorio) sin necesidad de hardware adicional, aprovechando los recursos disponibles en el aula. Además, al no usarse como equipo de trabajo, se evitan reinicios y cambios accidentales que afecten a los servicios.
+
+2. Segmentación en cuatro redes por función
+
+En lugar de una red plana, se han creado cuatro segmentos, cada uno con su propio puente virtual de Proxmox:
+
+DMZ (10.10.20.0/24, vmbr20): aloja r3con-web (Nginx y API FastAPI), que es el único servicio expuesto a usuarios. Si fuera comprometido, el atacante queda aislado de los datos y del resto de la infraestructura.
+Servidores (10.10.30.0/24, vmbr30): contiene los servicios internos de soporte: DNS y DHCP (r3con-net), base de datos MariaDB (r3con-db) y copias de seguridad (r3con-backup). Al no ser accesibles directamente desde fuera, se protegen los datos.
+Clientes (10.10.40.0/24, vmbr40): red para los equipos de usuario, con direccionamiento dinámico (.100 a .150). Separarlos de los servidores evita que un equipo cliente tenga acceso directo a la base de datos o a las copias.
+Laboratorio aislado (10.10.10.0/24, vmbr10): contiene target-web y r3con-agent, destinados a prácticas con un objetivo autorizado. Esta red no tiene salida a Internet ni acceso al resto, de modo que las pruebas ofensivas no pueden afectar a la plataforma ni a la red del aula.
+
+Esta separación sigue el principio de mínimo privilegio y limita el movimiento lateral: el compromiso de una red no implica el de las demás.
+
+3. Gateway r3con-gw con iptables
+
+Una máquina virtual con Ubuntu Server actúa como único punto de paso entre las redes, con la IP .1 en cada una. Centralizar el enrutamiento ahí aporta:
+
+Control del tráfico: todas las reglas de firewall entre segmentos se definen y auditan en un solo lugar.
+NAT: las redes internas salen a Internet sin exponer su direccionamiento.
+DNAT (80 y 443): el tráfico web del aula se redirige hacia el servicio de la DMZ, publicando solo lo necesario.
+Relay DHCP: permite que el servidor DHCP de r3con-net atienda a las redes de otros segmentos sin duplicar el servicio.
+
+Se ha elegido iptables por ser una herramienta estándar, ligera y bien documentada, con un coste de licencias nulo y un aprendizaje valioso para el equipo.
+
+4. Separación entre gestión y servicios
+
+La administración queda separada del tráfico de usuarios. El host Proxmox se gestiona por HTTPS en el puerto 8006 desde el PC de administración, y la vía de gestión es independiente de la que usa el PC de demo (www.r3con.test), que accede por DNAT al gateway. Así, un usuario de la plataforma no tiene ruta hacia la interfaz de administración del hipervisor.
+
+5. Acceso remoto seguro con NetBird
+
+Para trabajar desde casa se ha implementado un túnel NetBird (basado en WireGuard) entre el PC de casa y el host Proxmox. Esto evita abrir puertos en la red del aula o exponer la interfaz de Proxmox a Internet. El tráfico va cifrado, se autentica por par y el acceso se limita a los equipos autorizados del grupo.
+
+6. Reproducibilidad y valor didáctico
+
+La arquitectura reproduce a pequeña escala un entorno empresarial real (DMZ, zona de servidores, zona de usuarios y laboratorio de pruebas). Esto permite practicar conceptos de redes y ciberseguridad sin riesgo para infraestructura real, y las VMs y puentes se pueden recrear, clonar o restaurar desde las copias de r3con-backup.
+
 </details>
 
 
