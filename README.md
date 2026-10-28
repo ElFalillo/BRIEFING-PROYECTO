@@ -1,5 +1,3 @@
-
-B
 <p align="center">
   <img
     src="capturas/R3CON_animado.gif"
