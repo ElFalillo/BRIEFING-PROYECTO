@@ -1143,6 +1143,8 @@ El trabajo se dividió en dos espacios:
 
 También se diseñó la pantalla de acceso y se elaboró un mapa de navegabilidad.
 
+<img width="765" height="715" alt="image" src="https://github.com/user-attachments/assets/a315f759-0a48-41d7-830b-c05694a204cf" />
+
 > Los wireframes representan una propuesta de diseño. No implican que todas las funcionalidades estén implementadas o conectadas con el backend.
 
 ---
@@ -1754,30 +1756,9 @@ Esta estructura es una propuesta de organización, no una confirmación de que l
 
 ---
 
-## 17. Tareas pendientes
 
-- [ ] Revisar y aprobar los diseños con el equipo.
-- [ ] Validar los servicios y sus contenidos.
-- [ ] Completar los textos definitivos.
-- [ ] Validar los documentos legales.
-- [ ] Consolidar las pantallas seleccionadas en Figma.
-- [ ] Crear componentes reutilizables.
-- [ ] Configurar Auto Layout donde corresponda.
-- [ ] Conectar las pantallas mediante el prototipo de Figma.
-- [ ] Actualizar el mapa visual con el área del cliente.
-- [ ] Implementar la interfaz.
-- [ ] Conectar el login con el backend.
-- [ ] Aplicar control de acceso a los datos de cada cliente.
-- [ ] Conectar calendario, informes, hallazgos e historial.
-- [ ] Implementar descargas autorizadas.
-- [ ] Conectar el formulario de contacto.
-- [ ] Implementar el cierre de sesión.
-- [ ] Realizar pruebas funcionales.
-- [ ] Revisar usabilidad y accesibilidad.
 
----
-
-## 18. Resultado de la fase de diseño
+## 17. Resultado de la fase de diseño
 
 La fase de diseño permitió definir una propuesta coherente para la web pública y el área personal del cliente.
 
