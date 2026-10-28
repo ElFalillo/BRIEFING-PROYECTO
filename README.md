@@ -1774,3 +1774,519 @@ Esta documentación recoge el trabajo de diseño realizado durante el proceso de
 <img width="3200" height="2220" alt="Arquitecturadered" src="https://github.com/user-attachments/assets/069c8c9b-ee46-483e-bc2f-0427232295a6" />
 
 </details>
+
+
+<details>
+<summary><h2><b> 🌐 Instalación y configuración de un servidor DHCP KEA </b></h2></summary>
+# Playbook: instalación y configuración de un servidor DHCP KEA en Debian
+
+Entorno: Debian 13 y VirtualBox  
+Servicio: KEA DHCPv4
+
+## 1. Objetivo
+
+Instalar y configurar un servidor DHCP KEA en Debian para asignar automáticamente direcciones IP a un cliente conectado a una red interna de VirtualBox.
+
+En este documento se recogen los pasos realizados, los comandos utilizados, las comprobaciones y dos incidencias encontradas durante la práctica.
+
+## 2. Diseño del laboratorio
+
+El laboratorio está formado por dos máquinas virtuales:
+
+- Servidor Debian: proporciona el servicio DHCP.
+- Cliente Debian, llamado `dns2`: solicita una dirección IP al servidor.
+
+### Configuración de red
+
+| Máquina | Interfaz | Conexión | Dirección IP |
+|---|---|---|---|
+| Servidor | `enp0s3` | NAT | Automática |
+| Servidor | `enp0s8` | Red interna | `192.168.100.181/24` |
+| Cliente | `enp0s3` | NAT | Automática |
+| Cliente | `enp0s8` | Red interna | Asignada por KEA |
+
+### Parámetros del servicio DHCP
+
+| Parámetro | Valor |
+|---|---|
+| Red | `192.168.100.0/24` |
+| Máscara | `255.255.255.0` |
+| IP del servidor | `192.168.100.181` |
+| Rango de asignación | `192.168.100.120`–`192.168.100.130` |
+| Duración de la concesión | 600 segundos |
+| Duración máxima configurada | 7200 segundos |
+| DNS anunciados | `1.1.1.1` y `8.8.8.8` |
+| Dominio anunciado | `laboratorio.local` |
+| Puerta de enlace anunciada | `192.168.100.254` |
+
+La IP fija del servidor queda fuera del rango que se entrega a los clientes.
+
+> La puerta de enlace `192.168.100.254` se incluyó siguiendo la configuración de la práctica. No se ha comprobado la existencia de un router con esa dirección. Anunciar una puerta de enlace mediante DHCP no crea un router ni garantiza acceso a Internet.
+
+## 3. Configuración de los adaptadores en VirtualBox
+
+Con las máquinas apagadas, configurar los adaptadores de ambas máquinas:
+
+1. Adaptador 1: NAT.
+2. Adaptador 2: Red interna.
+3. Utilizar el mismo nombre de red interna en ambas máquinas, por ejemplo `LAN-DHCP`.
+4. Activar la opción «Cable conectado».
+
+El adaptador NAT permite acceder a Internet para instalar paquetes. El adaptador de red interna se utiliza para la comunicación entre el servidor DHCP y el cliente.
+
+Después de arrancar las máquinas, comprobar las interfaces:
+
+```bash
+ip -br a
+```
+
+En esta práctica:
+
+- `enp0s3` corresponde al adaptador NAT.
+- `enp0s8` corresponde al adaptador de red interna.
+
+## 4. Configuración de la IP fija del servidor
+
+El servidor necesita una dirección fija en la interfaz interna.
+
+Primero, crear una copia de seguridad:
+
+```bash
+sudo cp /etc/network/interfaces /etc/network/interfaces.bak
+```
+
+Editar el archivo:
+
+```bash
+sudo nano /etc/network/interfaces
+```
+
+Configurar el siguiente contenido:
+
+```ini
+source /etc/network/interfaces.d/*
+
+auto lo
+iface lo inet loopback
+
+allow-hotplug enp0s3
+iface enp0s3 inet dhcp
+
+allow-hotplug enp0s8
+iface enp0s8 inet static
+    address 192.168.100.181
+    netmask 255.255.255.0
+    dns-nameservers 192.168.100.181 1.1.1.1 9.9.9.9
+```
+
+La interfaz `enp0s3` mantiene su configuración automática. La interfaz `enp0s8` utiliza la dirección fija `192.168.100.181/24`.
+
+La línea `dns-nameservers` pertenece a la configuración DNS del propio servidor. No configura los DNS entregados por DHCP ni instala un servicio DNS; su aplicación depende de la integración DNS disponible en Debian.
+
+Aplicar los cambios desde la consola de VirtualBox:
+
+```bash
+sudo ifdown --force enp0s8
+sudo ip addr flush dev enp0s8
+sudo ifup enp0s8
+```
+
+> Estos comandos interrumpen temporalmente la conexión de esa interfaz. No deben ejecutarse desde una conexión remota que dependa de ella.
+
+Comprobar la dirección:
+
+```bash
+ip -br a
+```
+
+La interfaz `enp0s8` debe mostrar:
+
+```text
+192.168.100.181/24
+```
+
+## 5. Instalación de KEA DHCPv4
+
+Actualizar el índice de paquetes:
+
+```bash
+sudo apt update
+```
+
+Instalar el servidor DHCPv4:
+
+```bash
+sudo apt install kea-dhcp4-server -y
+```
+
+Este paquete instala el servicio que atenderá las solicitudes DHCP de los clientes.
+
+<img src="capturas/01-instalacion.jpg" alt="Instalación del paquete kea-dhcp4-server">
+
+## 6. Copia de seguridad de la configuración
+
+Antes de modificar el archivo de KEA, guardar una copia:
+
+```bash
+sudo cp /etc/kea/kea-dhcp4.conf /etc/kea/kea-dhcp4.conf.bak
+```
+
+La copia permite recuperar la configuración original si se comete algún error.
+
+En la captura, el comando se ejecutó desde `/etc/kea`, por lo que se utilizaron rutas relativas.
+
+<img src="capturas/02-copia-seguridad.jpg" alt="Copia de seguridad del archivo de configuración de KEA">
+
+## 7. Configuración del servidor KEA
+
+Editar el archivo:
+
+```bash
+sudo nano /etc/kea/kea-dhcp4.conf
+```
+
+La configuración final, después de corregir la interfaz de escucha, es la siguiente:
+
+```json
+{
+  "Dhcp4": {
+    "interfaces-config": {
+      "interfaces": [ "enp0s8" ]
+    },
+
+    "control-socket": {
+      "socket-type": "unix",
+      "socket-name": "/run/kea/kea4-ctrl-socket"
+    },
+
+    "lease-database": {
+      "type": "memfile",
+      "lfc-interval": 3600
+    },
+
+    "valid-lifetime": 600,
+    "max-valid-lifetime": 7200,
+
+    "subnet4": [
+      {
+        "id": 1,
+        "subnet": "192.168.100.0/24",
+
+        "pools": [
+          {
+            "pool": "192.168.100.120 - 192.168.100.130"
+          }
+        ],
+
+        "option-data": [
+          {
+            "name": "routers",
+            "data": "192.168.100.254"
+          },
+          {
+            "name": "domain-name-servers",
+            "data": "1.1.1.1, 8.8.8.8"
+          },
+          {
+            "name": "domain-name",
+            "data": "laboratorio.local"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Explicación de los principales parámetros
+
+| Parámetro | Función |
+|---|---|
+| `interfaces` | Indica la interfaz donde KEA escucha las solicitudes DHCP |
+| `control-socket` | Configura un socket Unix para el control local del servicio |
+| `lease-database` | Define el almacenamiento de las concesiones |
+| `lfc-interval` | Establece el intervalo de limpieza del archivo de concesiones |
+| `valid-lifetime` | Define la duración de las concesiones, en segundos |
+| `subnet` | Indica la red donde se reparten las direcciones |
+| `pool` | Define el rango disponible para los clientes |
+| `routers` | Anuncia una puerta de enlace |
+| `domain-name-servers` | Anuncia los servidores DNS |
+| `domain-name` | Anuncia el nombre de dominio |
+
+### Captura de la configuración inicial
+
+<img src="capturas/03-configuracion-inicial.jpg" alt="Configuración inicial de KEA antes de corregir la interfaz">
+
+> En esta captura todavía aparece `enp0s3`. Posteriormente se cambió a `enp0s8`, porque es la interfaz conectada a la red interna. La corrección se explica en la incidencia 2.
+
+## 8. Validación y arranque del servicio
+
+Comprobar el archivo de configuración:
+
+```bash
+sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf
+```
+
+Esta comprobación permite detectar errores antes de reiniciar el servicio. No sustituye la prueba de funcionamiento con un cliente.
+
+Si la validación no muestra errores, reiniciar KEA:
+
+```bash
+sudo systemctl restart kea-dhcp4-server
+```
+
+Consultar su estado:
+
+```bash
+sudo systemctl status kea-dhcp4-server --no-pager -l
+```
+
+El estado esperado es:
+
+```text
+Active: active (running)
+```
+
+<img src="capturas/04-servicio-activo.jpg" alt="Servicio KEA DHCPv4 activo">
+
+> El estado activo confirma que el proceso está funcionando, pero no garantiza por sí solo que esté escuchando en la interfaz correcta o entregando direcciones.
+
+Si se produce algún fallo, consultar los registros:
+
+```bash
+sudo journalctl -u kea-dhcp4-server -n 50 --no-pager
+```
+
+## 9. Configuración del cliente Debian
+
+En el cliente, editar el archivo:
+
+```bash
+sudo nano /etc/network/interfaces
+```
+
+Configurar las interfaces para obtener sus direcciones mediante DHCP:
+
+```ini
+source /etc/network/interfaces.d/*
+
+auto lo
+iface lo inet loopback
+
+auto enp0s3
+iface enp0s3 inet dhcp
+
+auto enp0s8
+iface enp0s8 inet dhcp
+```
+
+La interfaz `enp0s3` recibe su configuración de la red NAT. La interfaz `enp0s8` solicita una dirección al servidor KEA de la red interna.
+
+<img src="capturas/06-cliente-apipa.jpg" alt="Configuración DHCP del cliente y dirección APIPA antes de resolver la incidencia">
+
+Esta captura corresponde al momento anterior a la solución. El cliente estaba configurado para DHCP, pero en `enp0s8` tenía la dirección `169.254.201.80/16`.
+
+## 10. Renovación de la dirección del cliente
+
+Una vez corregida la configuración del servidor, bajar y levantar la interfaz interna del cliente:
+
+```bash
+sudo ifdown enp0s8
+sudo ifup enp0s8
+```
+
+Al levantarla, el cliente solicita una nueva concesión.
+
+En la salida se observa:
+
+```text
+enp0s8: offered 192.168.100.120 from 192.168.100.181
+enp0s8: leased 192.168.100.120 for 600 seconds
+```
+
+Esto confirma que el servidor maestro ofrece una dirección del rango configurado y que el cliente obtiene una concesión de 600 segundos.
+
+<img src="capturas/08-concesion-dhcp.jpg" alt="Oferta y concesión DHCP desde el servidor maestro">
+
+## 11. Comprobación de la dirección asignada
+
+Consultar las direcciones del cliente:
+
+```bash
+ip a
+```
+
+La interfaz `enp0s8` muestra:
+
+```text
+inet 192.168.100.120/24 brd 192.168.100.255 scope global dynamic enp0s8
+```
+
+<img src="capturas/07-cliente-ip-correcta.jpg" alt="Cliente con la dirección dinámica 192.168.100.120">
+
+La dirección obtenida pertenece al rango configurado en KEA. Además, la salida final ya no muestra una dirección APIPA en esa interfaz.
+
+## 12. Incidencias encontradas
+
+### Incidencia 1: error al abrir el archivo de configuración
+
+#### Síntoma
+
+Al ejecutar la validación apareció:
+
+```text
+Syntax check failed with: Unable to open file /etc/kea/kea-dhcp4.conf
+```
+
+<img src="capturas/05-error-validacion.jpg" alt="Error al abrir el archivo durante la validación">
+
+#### Diagnóstico
+
+KEA no podía abrir el archivo indicado.
+
+Este mensaje no demuestra un error de sintaxis del JSON. Primero era necesario comprobar la existencia del archivo, su nombre, su ruta y sus permisos.
+
+La captura no permite confirmar la causa exacta del problema de acceso.
+
+#### Procedimiento de resolución
+
+Comprobar los archivos del directorio:
+
+```bash
+sudo ls -l /etc/kea/
+```
+
+Abrir el archivo de configuración en la ruta utilizada por el servicio:
+
+```bash
+sudo nano /etc/kea/kea-dhcp4.conf
+```
+
+Guardar la configuración y repetir la validación:
+
+```bash
+sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf
+```
+
+Como evidencia posterior, el estado del servicio muestra que KEA pudo arrancar utilizando:
+
+```text
+/usr/sbin/kea-dhcp4 -c /etc/kea/kea-dhcp4.conf
+```
+
+#### Lección aprendida
+
+Antes de revisar el contenido del JSON, comprobar que el archivo existe y que se está utilizando la ruta correcta. No atribuir el fallo a una errata concreta sin verificarlo.
+
+### Incidencia 2: el cliente recibía APIPA aunque el servicio estaba activo
+
+#### Síntoma
+
+El cliente tenía la dirección:
+
+```text
+169.254.201.80/16
+```
+
+No obtenía una dirección del rango `192.168.100.120`–`192.168.100.130`.
+
+#### Causa identificada
+
+KEA estaba configurado para escuchar en:
+
+```json
+"interfaces": [ "enp0s3" ]
+```
+
+Sin embargo, esa interfaz pertenecía a la red NAT. La red interna estaba conectada a `enp0s8`, donde el servidor tenía la dirección `192.168.100.181/24`.
+
+#### Solución
+
+Cambiar la interfaz de escucha:
+
+```json
+"interfaces": [ "enp0s8" ]
+```
+
+Validar y reiniciar el servicio en el servidor:
+
+```bash
+sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf
+sudo systemctl restart kea-dhcp4-server
+```
+
+Repetir la solicitud DHCP desde el cliente:
+
+```bash
+sudo ifdown enp0s8
+sudo ifup enp0s8
+```
+
+Comprobar la dirección:
+
+```bash
+ip -4 addr show enp0s8
+```
+
+#### Resultado
+
+El cliente obtuvo:
+
+```text
+192.168.100.120/24
+```
+
+La oferta procedía de `192.168.100.181` y la concesión tenía una duración de 600 segundos.
+
+#### Lección aprendida
+
+Un servicio puede estar activo y tener una configuración funcionalmente incorrecta. Además de comprobar su estado, hay que revisar la interfaz de escucha y realizar una prueba desde el cliente.
+
+## 13. Resultado final
+
+Las capturas permiten comprobar que:
+
+- KEA arranca correctamente.
+- El cliente recibe `192.168.100.120/24`.
+- La dirección pertenece al rango configurado.
+- El servidor que realiza la oferta es `192.168.100.181`.
+- La concesión dura 600 segundos.
+- La interfaz interna del cliente deja de utilizar APIPA en la comprobación final.
+
+### Alcance de las comprobaciones
+
+No se documentan como realizadas pruebas de ping ni de acceso a Internet, porque no aparecen en las evidencias aportadas.
+
+Como comprobación adicional de conectividad con el servidor se podría ejecutar:
+
+```bash
+ping -c 4 192.168.100.181
+```
+
+La salida de la concesión también muestra la instalación de una ruta por defecto hacia `192.168.100.254`. Si no existe un router en esa dirección, debe eliminarse la opción `routers` de KEA para evitar anunciar una puerta de enlace no disponible.
+
+La asignación correcta de una dirección IP y la salida a Internet son comprobaciones diferentes.
+
+## 14. Estructura del repositorio
+
+```text
+.
+├── README.md
+└── capturas/
+    ├── 01-instalacion.jpg
+    ├── 02-copia-seguridad.jpg
+    ├── 03-configuracion-inicial.jpg
+    ├── 04-servicio-activo.jpg
+    ├── 05-error-validacion.jpg
+    ├── 06-cliente-apipa.jpg
+    ├── 07-cliente-ip-correcta.jpg
+    └── 08-concesion-dhcp.jpg
+```
+
+## 15. Guía de referencia
+
+Guía utilizada como punto de partida, adaptada a Debian y VirtualBox:
+
+- [RDR-IT: instalación y configuración de un servidor DHCP con KEA](https://rdr-it.com/es/ubuntu-instalacion-y-configuracion-de-un-servidor-dhcp-con-kea-isc-kea/)
+  
+</details>
