@@ -1820,10 +1820,6 @@ La arquitectura reproduce a pequeña escala un entorno empresarial real (DMZ, zo
 
 <details>
 <summary><h2><b> 🌐 Instalación y configuración de un servidor DHCP KEA </b></h2></summary>
-# Playbook: instalación y configuración de un servidor DHCP KEA en Debian
-
-Entorno: Debian 13 y VirtualBox  
-Servicio: KEA DHCPv4
 
 ## 1. Objetivo
 
@@ -1963,7 +1959,7 @@ sudo apt install kea-dhcp4-server -y
 
 Este paquete instala el servicio que atenderá las solicitudes DHCP de los clientes.
 
-<img src="capturas/01-instalacion.jpg" alt="Instalación del paquete kea-dhcp4-server">
+<img width="909" height="407" alt="Captura de pantalla 2026-10-26 183931" src="https://github.com/user-attachments/assets/fb698295-6b09-4f49-a886-c27d52a96f4a" />
 
 ## 6. Copia de seguridad de la configuración
 
@@ -1977,7 +1973,7 @@ La copia permite recuperar la configuración original si se comete algún error.
 
 En la captura, el comando se ejecutó desde `/etc/kea`, por lo que se utilizaron rutas relativas.
 
-<img src="capturas/02-copia-seguridad.jpg" alt="Copia de seguridad del archivo de configuración de KEA">
+<img width="591" height="39" alt="Captura de pantalla 2026-10-26 184224" src="https://github.com/user-attachments/assets/d6b9a1a4-812a-4674-b6cd-33d00987a5ed" />
 
 ## 7. Configuración del servidor KEA
 
@@ -2057,7 +2053,7 @@ La configuración final, después de corregir la interfaz de escucha, es la sigu
 
 ### Captura de la configuración inicial
 
-<img src="capturas/03-configuracion-inicial.jpg" alt="Configuración inicial de KEA antes de corregir la interfaz">
+<img width="1076" height="918" alt="Captura de pantalla 2026-10-26 184327" src="https://github.com/user-attachments/assets/d85ec085-118a-4170-be0f-88fa8c0e85ef" />
 
 > En esta captura todavía aparece `enp0s3`. Posteriormente se cambió a `enp0s8`, porque es la interfaz conectada a la red interna. La corrección se explica en la incidencia 2.
 
@@ -2089,7 +2085,7 @@ El estado esperado es:
 Active: active (running)
 ```
 
-<img src="capturas/04-servicio-activo.jpg" alt="Servicio KEA DHCPv4 activo">
+<img width="1090" height="613" alt="Captura de pantalla 2026-10-26 191613" src="https://github.com/user-attachments/assets/7322903c-d325-4029-9e4d-cefdf1c75166" />
 
 > El estado activo confirma que el proceso está funcionando, pero no garantiza por sí solo que esté escuchando en la interfaz correcta o entregando direcciones.
 
@@ -2124,7 +2120,7 @@ iface enp0s8 inet dhcp
 
 La interfaz `enp0s3` recibe su configuración de la red NAT. La interfaz `enp0s8` solicita una dirección al servidor KEA de la red interna.
 
-<img src="capturas/06-cliente-apipa.jpg" alt="Configuración DHCP del cliente y dirección APIPA antes de resolver la incidencia">
+<img width="745" height="486" alt="Captura de pantalla 2026-10-26 195625" src="https://github.com/user-attachments/assets/58228bc3-a056-45e2-9134-549cafa361c2" />
 
 Esta captura corresponde al momento anterior a la solución. El cliente estaba configurado para DHCP, pero en `enp0s8` tenía la dirección `169.254.201.80/16`.
 
@@ -2148,7 +2144,7 @@ enp0s8: leased 192.168.100.120 for 600 seconds
 
 Esto confirma que el servidor maestro ofrece una dirección del rango configurado y que el cliente obtiene una concesión de 600 segundos.
 
-<img src="capturas/08-concesion-dhcp.jpg" alt="Oferta y concesión DHCP desde el servidor maestro">
+<img width="486" height="350" alt="Captura de pantalla 2026-10-26 2019158" src="https://github.com/user-attachments/assets/eb72d0d4-9bad-4f46-824c-d18530e873d6" />
 
 ## 11. Comprobación de la dirección asignada
 
@@ -2164,7 +2160,7 @@ La interfaz `enp0s8` muestra:
 inet 192.168.100.120/24 brd 192.168.100.255 scope global dynamic enp0s8
 ```
 
-<img src="capturas/07-cliente-ip-correcta.jpg" alt="Cliente con la dirección dinámica 192.168.100.120">
+<img width="1029" height="490" alt="Captura de pantalla 2026-10-26 200353" src="https://github.com/user-attachments/assets/44706944-310b-4ab2-b75f-f0ce6e8021ec" />
 
 La dirección obtenida pertenece al rango configurado en KEA. Además, la salida final ya no muestra una dirección APIPA en esa interfaz.
 
@@ -2180,7 +2176,7 @@ Al ejecutar la validación apareció:
 Syntax check failed with: Unable to open file /etc/kea/kea-dhcp4.conf
 ```
 
-<img src="capturas/05-error-validacion.jpg" alt="Error al abrir el archivo durante la validación">
+<img width="647" height="69" alt="Captura de pantalla 2026-10-26 191149" src="https://github.com/user-attachments/assets/da99cf5e-e643-4d3f-929f-eae34fc82283" />
 
 #### Diagnóstico
 
