@@ -1153,76 +1153,80 @@ También se diseñó la pantalla de acceso y se elaboró un mapa de navegabilida
 ### 2.1. Inicio
 Presenta la propuesta de R3con y los accesos principales a Servicios y Contacto. Incluye la propuesta de valor, los servicios destacados, la metodología, un ejemplo conceptual de informe, información de la empresa y preguntas frecuentes. La baja fidelidad muestra una estructura resumida; la alta fidelidad desarrolla estos bloques.
 
-Colocar aquí la imagen de Inicio en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170533.png" alt="Inicio en baja fidelidad" width="500"> <img src="capturas/Captura%20de%20pantalla%202026-10-28%20171420.png" alt="Inicio en baja fidelidad" width="300">
 
-Colocar debajo la imagen de Inicio en alta fidelidad.
 
 ### 2.2. Servicios
 Organiza las áreas de trabajo en tarjetas: reconocimiento de activos, identificación de servicios expuestos, análisis de superficie de exposición e informes técnicos. Cada tarjeta contempla un acceso a la explicación del servicio.
 
-Colocar aquí la imagen de Servicios en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170610.png" alt="Inicio en baja fidelidad" width="500">
 
-Colocar debajo la imagen de Servicios en alta fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171441.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.3. Detalle de servicio
 Utiliza una plantilla reutilizable para explicar qué es el servicio, a quién se dirige, qué incluye y qué queda fuera de su alcance. También presenta el proceso de trabajo, los entregables y una llamada a Contacto. La pantalla de referencia corresponde a Reconocimiento de activos.
 
-Colocar aquí la imagen de Detalle de servicio en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170542.png" alt="Inicio en baja fidelidad" width="500">
+
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171507.png" alt="Inicio en baja fidelidad" width="250">
 
 Colocar debajo la imagen de Detalle de servicio en alta fidelidad.
 
 ### 2.4. Sobre nosotros
 Presenta el enfoque de R3con y su forma de trabajar: entornos autorizados, rigor técnico, comunicación clara y documentación comprensible. Combina una zona visual con información de la empresa y un acceso a Contacto.
 
-Colocar aquí la imagen de Sobre nosotros en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170620.png" alt="Inicio en baja fidelidad" width="500">
 
-Colocar debajo la imagen de Sobre nosotros en alta fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171531.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.5. Contacto
 Incluye una zona informativa y un formulario para enviar consultas. Contempla nombre, empresa opcional, correo electrónico, mensaje y aceptación de privacidad. La acción principal es «Enviar consulta» y no solicita credenciales ni información técnica sensible.
 
-Colocar aquí la imagen de Contacto en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170552.png" alt="Inicio en baja fidelidad" width="500">
 
-Colocar debajo la imagen de Contacto en alta fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171547.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.6. Login
 Representa el acceso al área personal mediante correo electrónico y contraseña. Incluye el logotipo, el botón «Iniciar sesión» y un enlace para volver a Inicio. El destino previsto tras una autenticación correcta es Resumen.
 
-Colocar aquí la imagen de Login en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
 
-Colocar debajo la imagen de Login en alta fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.7. Resumen
 Es la pantalla de entrada al área del cliente. Reúne indicadores ilustrativos y módulos reducidos de Calendario, Informes, Hallazgos e Historial, con accesos a sus vistas ampliadas.
 
-Colocar aquí la imagen de Resumen en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170642.png" alt="Inicio en baja fidelidad" width="500">
 
-Colocar debajo la imagen de Resumen en alta fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171926.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.8. Calendario
 Muestra un calendario principal con días destacados y una agenda lateral para representar próximas actividades o revisiones. Incluye controles visuales de navegación, sin vincularse a eventos reales.
 
-Colocar aquí la imagen de Calendario en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
 
-Colocar debajo la imagen de Calendario en alta fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
 
 ###2.9. Informes
 Presenta un listado de documentos con referencia, nombre, estado y acciones previstas de consulta o descarga. También reserva espacios para búsqueda y filtrado.
 
-Colocar aquí la imagen de Informes en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
 
-Colocar debajo la imagen de Informes en alta fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.10. Hallazgos
 Organiza las observaciones en una tabla con referencia, descripción, prioridad y estado. Los ejemplos son ilustrativos y la prioridad queda pendiente de valoración técnica. En las capturas actuales, esta pantalla aparece titulada «Notificaciones»; el nombre deberá unificarse.
 
-Colocar aquí la imagen de Notificaciones/Hallazgos en baja fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
 
-Colocar debajo la imagen de Notificaciones/Hallazgos en alta fidelidad.
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.11. Historial
 Representa una secuencia de actividad del proyecto, como la incorporación de informes, la programación de revisiones, los cambios de alcance y el registro de consultas.
 
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
+
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
 
  ## 3. Wireframes de alta fidelidad y baja fidelidad
  Los wireframes de baja fidelidad permitieron revisar la distribución del espacio, la jerarquía de la información y la ubicación de menús, botones, formularios y bloques de contenido.
