@@ -1252,45 +1252,47 @@ Antes de publicar deberán revisarse la accesibilidad, el contraste, la navegaci
 
 Justificación de la arquitectura de red
 
-La red del proyecto se ha diseñado con cuatro redes internas separadas por función, detrás de un gateway basado en iptables, todo virtualizado sobre un único PC del aula con Proxmox VE.
+La red del proyecto la hemos diseñado con cuatro redes internas separadas según su función, todas detrás de un gateway con iptables, y todo virtualizado en un único PC del aula con Proxmox VE.
 
 1. Un único servidor Proxmox dedicado
 
-Se ha usado un PC de clase como servidor dedicado, siempre encendido y sin uso directo. Esto permite virtualizar toda la plataforma (gateway, servidores, clientes y red aislada) sin hardware adicional, aprovechando los recursos del aula. Al no usarse como equipo de trabajo, se evitan reinicios y cambios accidentales que afecten a los servicios.
+Hemos usado un PC de clase como servidor dedicado. Está siempre encendido y nadie lo usa como equipo de trabajo. Así podemos virtualizar toda la plataforma (gateway, servidores, clientes y red aislada) sin tener que comprar hardware extra, aprovechando lo que ya hay en el aula. Además, como nadie trabaja directamente en él, evitamos reinicios o cambios accidentales que tumben los servicios.
 
 2. Segmentación en cuatro redes por función
 
-En lugar de una red plana, se han creado cuatro segmentos, cada uno con su propio puente virtual de Proxmox:
+En vez de montar una red plana, hemos creado cuatro segmentos, cada uno con su propio puente virtual de Proxmox:
 
-DMZ (10.10.20.0/24, vmbr20): aloja r3con-web (Nginx y API FastAPI), el único servicio expuesto a los usuarios. Si fuera comprometido, el atacante quedaría aislado de los datos y del resto de la infraestructura.
-Servidores (10.10.30.0/24, vmbr30): contiene los servicios internos: DNS y DHCP (r3con-net), base de datos MariaDB (r3con-db) y copias de seguridad (r3con-backup). Al no ser accesibles directamente desde fuera, se protegen los datos.
-Clientes (10.10.40.0/24, vmbr40): red para los equipos de usuario, con direccionamiento dinámico (.100 a .150). Separarlos de los servidores evita que un cliente acceda directamente a la base de datos o a las copias.
-Red aislada (10.10.10.0/24, vmbr10): contiene target-web y r3con-agent, destinados a pruebas sobre un objetivo autorizado. No tiene salida a Internet ni acceso al resto de redes, de modo que estas pruebas no pueden afectar a la plataforma ni a la red del aula.
+DMZ (10.10.20.0/24, vmbr20): aquí está r3con-web (Nginx y la API FastAPI), que es el único servicio expuesto a los usuarios. Si alguien lo compromete, queda aislado de los datos y del resto de la infraestructura.
+Servidores (10.10.30.0/24, vmbr30): contiene los servicios internos: DNS y DHCP (r3con-net), la base de datos MariaDB (r3con-db) y las copias de seguridad (r3con-backup). Como no se puede acceder a ellos directamente desde fuera, los datos quedan protegidos.
+Clientes (10.10.40.0/24, vmbr40): es la red de los equipos de usuario, con direccionamiento dinámico (del .100 al .150). Al separarlos de los servidores, un cliente no puede llegar directamente a la base de datos ni a las copias.
+Red aislada (10.10.10.0/24, vmbr10): tiene target-web y r3con-agent, pensados para hacer pruebas sobre un objetivo autorizado. No tiene salida a Internet ni acceso al resto de redes, así que estas pruebas no pueden afectar a la plataforma ni a la red del aula.
 
-Esta separación sigue el principio de mínimo privilegio y limita el movimiento lateral: el compromiso de una red no implica el de las demás.
+Esta separación sigue el principio de mínimo privilegio y limita el movimiento lateral: si se compromete una red, no significa que se comprometan las demás.
 
 3. Gateway r3con-gw con iptables
 
-Una máquina virtual con Ubuntu Server actúa como único punto de paso entre las redes, con la IP .1 en cada una. Centralizar ahí el enrutamiento aporta:
+Una máquina virtual con Ubuntu Server hace de único punto de paso entre las redes, con la IP .1 en cada una. Al centralizar ahí el enrutamiento conseguimos:
 
-Control del tráfico: todas las reglas de firewall entre segmentos se definen y auditan en un solo lugar.
+Control del tráfico: todas las reglas de firewall entre segmentos se definen y se revisan en un solo sitio.
 NAT: las redes internas salen a Internet sin exponer su direccionamiento.
-DNAT (80 y 443): el tráfico web del aula se redirige al servicio de la DMZ, publicando solo lo necesario.
-Relay DHCP: el servidor DHCP de r3con-net atiende a otros segmentos sin duplicar el servicio.
+DNAT (80 y 443): el tráfico web del aula se redirige al servicio de la DMZ, de forma que solo publicamos lo necesario.
+Relay DHCP: el servidor DHCP de r3con-net da servicio a los demás segmentos sin tener que duplicarlo.
 
-Se ha elegido iptables por ser una herramienta estándar, ligera y bien documentada, sin coste de licencias y con un aprendizaje valioso para el equipo.
+Elegimos iptables porque es una herramienta estándar, ligera y con mucha documentación, no tiene coste de licencias y además nos sirve para aprender algo muy útil para el equipo.
 
 4. Separación entre gestión y servicios
 
-La administración queda separada del tráfico de usuarios. El host Proxmox se gestiona por HTTPS en el puerto 8006 desde el PC de administración, y esta vía es independiente de la que usa el PC de demo (www.r3con.test), que accede por DNAT a través del gateway. Así, un usuario de la plataforma no tiene ruta hacia la interfaz de administración del hipervisor.
+La administración está separada del tráfico de los usuarios. El host Proxmox se gestiona por HTTPS en el puerto 8006 desde el PC de administración, y esta vía es independiente de la que usa el PC de demo (www.r3con.test), que accede por DNAT a través del gateway. De esta forma, un usuario de la plataforma no tiene ruta hacia la interfaz de administración del hipervisor.
 
 5. Acceso remoto seguro con NetBird
 
-Para trabajar desde casa se ha implementado un túnel NetBird (basado en WireGuard) entre el PC de casa y el host Proxmox. Esto evita abrir puertos en la red del aula o exponer la interfaz de Proxmox a Internet. El tráfico va cifrado, se autentica por par y el acceso se limita a los equipos autorizados.
+Para poder trabajar desde casa hemos montado un túnel NetBird (basado en WireGuard) entre el PC de casa y el host Proxmox. Con esto evitamos abrir puertos en la red del aula o exponer la interfaz de Proxmox a Internet. El tráfico va cifrado, se autentica por par y el acceso queda limitado a los equipos autorizados.
 
 6. Reproducibilidad y valor didáctico
 
-La arquitectura reproduce a pequeña escala un entorno empresarial real (DMZ, zona de servidores, zona de usuarios y red de pruebas aislada). Permite practicar conceptos de redes y ciberseguridad sin riesgo para infraestructura real, y las VMs y puentes se pueden recrear, clonar o restaurar desde las copias de r3con-backup.
+La arquitectura reproduce a pequeña escala un entorno empresarial real (DMZ, zona de servidores, zona de usuarios y red de pruebas aislada). Nos permite practicar conceptos de redes y ciberseguridad sin riesgo para infraestructura real, y las VMs y los puentes se pueden recrear, clonar o restaurar a partir de las copias de r3con-backup.
+
+Lo he dejado con un tono de estudiante de ASIX: técnico y correcto, pero en primera persona del plural y con frases algo más directas. Si quieres que suene más “humano” todavía (alguna repetición, frases menos pulidas o más coloquial), dímelo y lo ajusto.
 
 </details>
 
