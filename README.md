@@ -155,15 +155,7 @@ El sistema debe construirse aplicando el principio de **mínimo privilegio** tan
 
 Estos precios son **hipótesis**, no tarifas definitivas. Antes de comercializar el servicio será necesario validar la demanda, el coste de operación y soporte, los límites de cada plan y la calidad de los hallazgos.
 
-## 📌 Estado actual
 
-SecureReport se encuentra en **fase de definición**. El siguiente hito técnico es construir un laboratorio controlado y demostrar el recorrido completo:
-
-```text
-Escaneo autorizado → API → almacenamiento → hallazgo → informe
-```
-
-La prioridad inicial es obtener resultados fiables y explicables antes de añadir más herramientas o prometer una auditoría completa.
 </details>
 
 
