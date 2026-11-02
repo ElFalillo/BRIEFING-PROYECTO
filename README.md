@@ -2162,7 +2162,7 @@ sudo cat /srv/nfs/desarrollo/prueba_dev1.txt
 
 El archivo aparece con UID `11001` y GID `20001`, correspondientes a `dev1` y `desarrollo`. Su contenido coincide con lo escrito desde el cliente. Así se comprueba que no se ha escrito por error en una carpeta local sin montar.
 
-<!-- CAPTURA 2: colocar aquí 02-archivo-en-servidor.jpg -->
+![Archivo creado por dev1 en el servidor, con UID 11001 y GID 20001](capturas/02-archivo-en-servidor.jpg)
 
 ### 8.3. Usuario no autorizado
 
@@ -2178,7 +2178,7 @@ sudo -u externo1 -- touch /mnt/desarrollo/intento_externo1.txt
 
 Las dos operaciones devuelven `Permission denied`: no puede listar el contenido ni crear archivos. Esta prueba sí se realizó y su captura confirma el bloqueo.
 
-<!-- CAPTURA 3: colocar aquí 03-bloqueo-externo1.jpg -->
+![Denegación de acceso a externo1 al listar la carpeta y crear un archivo](capturas/03-bloqueo-externo1.jpg)
 
 ### 8.4. Resumen de la validación
 
@@ -2194,7 +2194,7 @@ sudo -u externo1 -- touch /mnt/desarrollo/intento_externo1.txt
 
 La captura muestra las dos identidades, el montaje NFSv4.2, la lectura correcta de `dev1` y la denegación a `externo1`.
 
-<!-- CAPTURA 4: colocar aquí 04-validacion-completa.jpg -->
+![Validación del montaje NFS y comparación del acceso de dev1 y externo1](capturas/04-validacion-completa.jpg)
 
 | Prueba | Resultado |
 |---|---|
@@ -2220,7 +2220,7 @@ sudo ls -lh /root/backup-ldap/
 
 La captura muestra ambos archivos, con permisos restringidos y tamaños distintos de cero. Esto demuestra su creación, no una restauración probada. Para una copia coherente se debe evitar la modificación concurrente del directorio durante la exportación y planificar su recuperación.
 
-<!-- CAPTURA 5: colocar aquí 05-copia-ldap.jpg -->
+![Copias de la configuración y los datos de OpenLDAP con permisos restringidos](capturas/05-copia-ldap.jpg)
 
 No subir estos LDIF a GitHub: pueden contener datos personales, hashes y configuración sensible.
 
