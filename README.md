@@ -1810,10 +1810,6 @@ Guía utilizada como punto de partida, adaptada a Debian y VirtualBox:
 
 <details>
 <summary><h2><b> 🔐 Playbook de identidad y almacenamiento: OpenLDAP, NFS y FusionDirectory </b></h2></summary>
-# Manual de operaciones: OpenLDAP, NFS y preparación de FusionDirectory
-
-Entorno: Debian 13 y VirtualBox
-
 ## 1. Objetivo
 
 El objetivo de esta práctica es centralizar los usuarios y grupos en OpenLDAP y utilizar esas identidades para controlar el acceso a una carpeta compartida por NFS.
