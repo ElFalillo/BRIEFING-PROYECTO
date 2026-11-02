@@ -1245,7 +1245,7 @@ El objetivo funcional es permitir al cliente consultar calendario, informes, hal
 
 Antes de publicar deberán revisarse la accesibilidad, el contraste, la navegación con teclado, los mensajes de error, el comportamiento con zoom y el tratamiento de datos personales. Debe realizarse una auditoría 
 
-
+</details>
 <details>
 <summary><h2><b> Infraestructura de Red </b></h2></summary>
 <img width="3200" height="2220" alt="Arquitecturadered" src="https://github.com/user-attachments/assets/069c8c9b-ee46-483e-bc2f-0427232295a6" />
