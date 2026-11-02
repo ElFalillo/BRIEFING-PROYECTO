@@ -2237,7 +2237,7 @@ apt-cache policy fusiondirectory fusiondirectory-schema fusiondirectory-plugin-p
 
 La máquina utiliza Debian GNU/Linux 13 Trixie. La consulta no encuentra `fusiondirectory` ni `fusiondirectory-plugin-posix`, y `fusiondirectory-schema` no tiene candidato.
 
-<!-- CAPTURA 1: colocar aquí 01-debian-paquetes-fusiondirectory.jpg -->
+![Debian 13 Trixie y comprobación de los paquetes de FusionDirectory disponibles](capturas/01-debian-paquetes-fusiondirectory.jpg)
 
 Esta salida demuestra que los paquetes no están disponibles en los repositorios configurados. No demuestra que sea imposible instalar FusionDirectory en cualquier entorno Trixie.
 
