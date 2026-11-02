@@ -1247,7 +1247,7 @@ Antes de publicar deberán revisarse la accesibilidad, el contraste, la navegaci
 
 </details>
 <details>
-<summary><h2><b> Infraestructura de Red </b></h2></summary>
+<summary><h2><b> 🔌 Infraestructura de Red </b></h2></summary>
 <img width="3200" height="2220" alt="Arquitecturadered" src="https://github.com/user-attachments/assets/069c8c9b-ee46-483e-bc2f-0427232295a6" />
 
 Justificación de la arquitectura de red
@@ -1806,4 +1806,515 @@ Guía utilizada como punto de partida, adaptada a Debian y VirtualBox:
 
 - [RDR-IT: instalación y configuración de un servidor DHCP con KEA](https://rdr-it.com/es/ubuntu-instalacion-y-configuracion-de-un-servidor-dhcp-con-kea-isc-kea/)
   
+</details>
+
+<details>
+<summary><h2><b> 🔐 Playbook de identidad y almacenamiento: OpenLDAP, NFS y FusionDirectory </b></h2></summary>
+# Manual de operaciones: OpenLDAP, NFS y preparación de FusionDirectory
+
+Entorno: Debian 13 y VirtualBox
+
+## 1. Objetivo
+
+El objetivo de esta práctica es centralizar los usuarios y grupos en OpenLDAP y utilizar esas identidades para controlar el acceso a una carpeta compartida por NFS.
+
+Se trabaja con dos usuarios. `dev1` pertenece al grupo `desarrollo` y puede utilizar el recurso. `externo1` pertenece a otro grupo y no debe poder acceder a él.
+
+FusionDirectory se plantea como interfaz web para administrar el directorio. Durante la práctica no se llegó a instalar: los repositorios configurados en Debian 13 no ofrecían los paquetes necesarios. Esta limitación queda recogida al final del manual, sin dar por completada esa parte.
+
+## 2. Entorno de trabajo
+
+Las dos máquinas están conectadas a una Red NAT de VirtualBox llamada `ldapserver`.
+
+| Elemento | Configuración |
+|---|---|
+| Servidor LDAP y NFS | `20.0.0.5/24` |
+| Cliente Debian | `20.0.0.6/24` |
+| Puerta de enlace comprobada | `20.0.0.1` |
+| Dominio LDAP | `planetafp.local` |
+| Base DN | `dc=planetafp,dc=local` |
+| Usuarios | `ou=personas,dc=planetafp,dc=local` |
+| Grupos | `ou=grupos,dc=planetafp,dc=local` |
+| Carpeta del servidor | `/srv/nfs/desarrollo` |
+| Punto de montaje del cliente | `/mnt/desarrollo` |
+
+| Usuario | UID | Grupo principal | GID | Acceso previsto |
+|---|---:|---|---:|---|
+| `dev1` | 11001 | `desarrollo` | 20001 | Permitido |
+| `externo1` | 11002 | `externos` | 20002 | Denegado |
+
+La red reproduce los parámetros usados en el laboratorio. Para una instalación nueva fuera de este entorno conviene planificar un rango privado. Si el profesor exige literalmente el dominio `sistemapropio.local` y `ou=usuarios` de la opción B, hay que adaptar también los comandos y los clientes, no solo el texto del documento.
+
+## 3. Preparación de la red
+
+### 3.1. VirtualBox
+
+En las dos máquinas se selecciona:
+
+```text
+Configuración → Red → Adaptador 1
+Conectado a: Red NAT
+Nombre: ldapserver
+Cable conectado: Sí
+```
+
+No se utiliza NAT individual, porque las máquinas deben compartir la misma red. Tampoco se necesita un reenvío de puertos para la comunicación directa entre cliente y servidor.
+
+### 3.2. Dirección del servidor
+
+Antes de editar la configuración, se comprueba el nombre de la tarjeta:
+
+```bash
+ip -br a
+```
+
+En el servidor la interfaz es `enp0s3`. Su configuración con ifupdown en `/etc/network/interfaces` es:
+
+```text
+source /etc/network/interfaces.d/*
+
+# Interfaz local
+auto lo
+iface lo inet loopback
+
+# Servidor LDAP y NFS
+auto enp0s3
+iface enp0s3 inet static
+    address 20.0.0.5
+    netmask 255.255.255.0
+    gateway 20.0.0.1
+```
+
+Se conserva una copia del archivo antes de modificarlo. Los cambios de red se hacen desde la consola de VirtualBox para no perder una conexión SSH. No se debe configurar la misma tarjeta a la vez con varios gestores de red.
+
+En el cliente se mantiene `20.0.0.6`, utilizando el nombre real de su interfaz. El servidor anterior debe permanecer apagado si también tenía `20.0.0.5`.
+
+### 3.3. Comprobaciones de conexión
+
+```bash
+ip route
+ip route get 1.1.1.1
+ping -c 3 -W 2 1.1.1.1
+getent hosts deb.debian.org
+sudo apt update
+```
+
+Durante la práctica apareció el error `Temporary failure resolving`. Se separó el diagnóstico de red del de DNS: alcanzar una IP pública no demuestra que se puedan resolver nombres.
+
+Se utilizaron estos servidores DNS en `/etc/resolv.conf`:
+
+```text
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+```
+
+El archivo indicaba que lo generaba dhcpcd. Por tanto, una edición manual puede ser temporal. Queda pendiente verificar la persistencia de DNS con el gestor correspondiente después de reiniciar.
+
+## 4. Instalación de OpenLDAP
+
+Los comandos de este apartado se ejecutan en el servidor nuevo. No se debe repetir una reconfiguración inicial sobre una base con datos sin haber hecho una copia.
+
+```bash
+sudo apt update
+sudo apt install slapd ldap-utils
+sudo dpkg-reconfigure slapd
+```
+
+En el asistente se establece:
+
+| Pregunta | Respuesta |
+|---|---|
+| Omitir la configuración | No |
+| Dominio DNS | `planetafp.local` |
+| Organización | `PlanetaFP` |
+| Contraseña del administrador | Una contraseña propia, guardada fuera del repositorio |
+| Eliminar la base al purgar | No |
+| Mover base anterior | Solo al preparar una instalación limpia y sin datos que conservar |
+
+Después se comprueba el servicio y la cuenta administrativa:
+
+```bash
+systemctl is-active slapd
+ldapwhoami -x -H ldap://127.0.0.1 -D "cn=admin,dc=planetafp,dc=local" -W
+```
+
+La respuesta esperada de la segunda orden es:
+
+```text
+dn:cn=admin,dc=planetafp,dc=local
+```
+
+La contraseña de `sudo` es la del usuario local. La contraseña que solicita `ldapwhoami` con `-W` es la del administrador LDAP.
+
+### 4.1. Estructura del directorio
+
+Se crea el archivo `base-practica.ldif` con este contenido:
+
+```ldif
+dn: ou=personas,dc=planetafp,dc=local
+objectClass: organizationalUnit
+ou: personas
+
+dn: ou=grupos,dc=planetafp,dc=local
+objectClass: organizationalUnit
+ou: grupos
+
+dn: cn=desarrollo,ou=grupos,dc=planetafp,dc=local
+objectClass: posixGroup
+cn: desarrollo
+gidNumber: 20001
+memberUid: dev1
+
+dn: cn=externos,ou=grupos,dc=planetafp,dc=local
+objectClass: posixGroup
+cn: externos
+gidNumber: 20002
+memberUid: externo1
+
+dn: uid=dev1,ou=personas,dc=planetafp,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+uid: dev1
+cn: Usuario Desarrollo
+sn: Desarrollo
+uidNumber: 11001
+gidNumber: 20001
+homeDirectory: /home/dev1
+loginShell: /bin/bash
+
+dn: uid=externo1,ou=personas,dc=planetafp,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+uid: externo1
+cn: Usuario Externo
+sn: Externo
+uidNumber: 11002
+gidNumber: 20002
+homeDirectory: /home/externo1
+loginShell: /bin/bash
+```
+
+Antes de importar, se comprueba que no se reutilizan UID o GID ocupados. En una base nueva se carga con:
+
+```bash
+ldapadd -x -H ldap://127.0.0.1 -D "cn=admin,dc=planetafp,dc=local" -W -f base-practica.ldif
+```
+
+Si aparece `Already exists`, se revisan las entradas existentes antes de repetir la operación. La importación no es una tarea que deba ejecutarse cada vez que se usa el laboratorio.
+
+Para consultar los grupos:
+
+```bash
+ldapsearch -x -LLL -H ldap://127.0.0.1 -b "dc=planetafp,dc=local" "(objectClass=posixGroup)" dn cn gidNumber memberUid
+```
+
+No se incluyen contraseñas de usuarios en el LDIF. Las pruebas posteriores con `sudo -u` ejecutan operaciones con su identidad, pero no prueban autenticación de inicio de sesión.
+
+## 5. Reconocimiento de usuarios y grupos en Linux
+
+Tener entradas en LDAP no basta para que Linux las reconozca. Se utiliza NSS con nslcd tanto en el servidor como en el cliente.
+
+```bash
+sudo apt install nslcd libnss-ldapd ldap-utils
+```
+
+### 5.1. Archivo `/etc/nslcd.conf`
+
+En el servidor, las líneas de conexión son:
+
+```text
+uri ldap://127.0.0.1/
+base dc=planetafp,dc=local
+```
+
+En el cliente son:
+
+```text
+uri ldap://20.0.0.5/
+base dc=planetafp,dc=local
+```
+
+Se conserva el resto de opciones del archivo y no se duplican estas líneas. En el cliente no se utiliza `127.0.0.1`, porque apuntaría al propio cliente.
+
+La lectura anónima de los atributos de identidad funcionó en este laboratorio. Si las ACL no la permiten en otro entorno, se necesita una cuenta de lectura y una conexión protegida, no abrir todo el directorio ni usar el administrador como solución rápida.
+
+### 5.2. Archivo `/etc/nsswitch.conf`
+
+Se añade `ldap` a las fuentes existentes de usuarios y grupos. Por ejemplo:
+
+```text
+passwd:         files systemd ldap
+group:          files systemd ldap
+```
+
+No se eliminan otras fuentes que pueda necesitar el sistema. Después:
+
+```bash
+sudo systemctl enable --now nslcd
+sudo systemctl restart nslcd
+getent passwd dev1
+getent group desarrollo
+id dev1
+id externo1
+```
+
+Los UID y GID deben coincidir en ambos equipos. Un grupo local creado con `groupadd` no sustituye al grupo LDAP de esta práctica.
+
+## 6. Instalación del servidor NFS
+
+En el servidor:
+
+```bash
+sudo apt install nfs-kernel-server
+getent group desarrollo
+```
+
+Se continúa solo si el grupo se reconoce con GID `20001`.
+
+### 6.1. Carpeta y permisos
+
+```bash
+sudo mkdir -p /srv/nfs/desarrollo
+sudo chown root:desarrollo /srv/nfs/desarrollo
+sudo chmod 770 /srv/nfs/desarrollo
+sudo namei -l /srv/nfs/desarrollo
+```
+
+El resultado del directorio final debe ser:
+
+```text
+drwxrwx--- ... root desarrollo ... /srv/nfs/desarrollo
+```
+
+El propietario y el grupo tienen acceso completo al directorio. El resto de usuarios no tiene acceso.
+
+### 6.2. Publicación del recurso
+
+Se añade una sola vez a `/etc/exports`:
+
+```text
+# Acceso desde la red del laboratorio.
+# Los permisos del directorio limitan después el acceso por usuario/grupo.
+/srv/nfs/desarrollo 20.0.0.0/24(rw,sync,no_subtree_check,root_squash)
+```
+
+| Opción | Uso |
+|---|---|
+| `rw` | Permite escritura si los permisos del directorio la autorizan |
+| `sync` | Confirma operaciones después de comprometer los cambios a almacenamiento estable |
+| `no_subtree_check` | Desactiva la comprobación de subárbol |
+| `root_squash` | Evita conservar los privilegios de root remoto sobre el recurso |
+
+Se aplica la configuración:
+
+```bash
+sudo systemctl enable --now nfs-kernel-server
+sudo exportfs -ra
+sudo exportfs -v
+```
+
+La exportación debe mostrar `/srv/nfs/desarrollo` para `20.0.0.0/24`. El grupo LDAP se relaciona con NFS mediante el GID y los permisos POSIX, no escribiendo el nombre del grupo en lugar de una IP en `/etc/exports`.
+
+## 7. Montaje en el cliente
+
+```bash
+sudo apt install nfs-common
+sudo mkdir -p /mnt/desarrollo
+findmnt -M /mnt/desarrollo
+```
+
+Si no está montado:
+
+```bash
+sudo mount -t nfs 20.0.0.5:/srv/nfs/desarrollo /mnt/desarrollo
+```
+
+Comprobar:
+
+```bash
+findmnt -M /mnt/desarrollo
+```
+
+En las pruebas se utilizó NFSv4.2. Si ya aparece la fuente correcta, no se vuelve a montar encima.
+
+El montaje persistente con `/etc/fstab` queda fuera de los resultados comprobados. Si se añade, hay que guardar una copia del archivo y validar el arranque antes de marcar esa tarea como completada.
+
+## 8. Pruebas de acceso
+
+### 8.1. Usuario autorizado
+
+En el cliente:
+
+```bash
+id dev1
+sudo -u dev1 -- sh -c 'echo "Prueba NFS correcta" > /mnt/desarrollo/prueba_dev1.txt'
+sudo -u dev1 -- cat /mnt/desarrollo/prueba_dev1.txt
+```
+
+Resultado observado:
+
+```text
+Prueba NFS correcta
+```
+
+### 8.2. Comprobación del archivo en el servidor
+
+```bash
+sudo ls -ln /srv/nfs/desarrollo/prueba_dev1.txt
+sudo cat /srv/nfs/desarrollo/prueba_dev1.txt
+```
+
+El archivo aparece con UID `11001` y GID `20001`, correspondientes a `dev1` y `desarrollo`. Su contenido coincide con lo escrito desde el cliente. Así se comprueba que no se ha escrito por error en una carpeta local sin montar.
+
+<!-- CAPTURA 2: colocar aquí 02-archivo-en-servidor.jpg -->
+
+### 8.3. Usuario no autorizado
+
+En el cliente:
+
+```bash
+id externo1
+sudo -u externo1 -- ls -la /mnt/desarrollo
+sudo -u externo1 -- touch /mnt/desarrollo/intento_externo1.txt
+```
+
+`externo1` aparece con UID `11002` y grupo `externos`, GID `20002`. No pertenece a `desarrollo`.
+
+Las dos operaciones devuelven `Permission denied`: no puede listar el contenido ni crear archivos. Esta prueba sí se realizó y su captura confirma el bloqueo.
+
+<!-- CAPTURA 3: colocar aquí 03-bloqueo-externo1.jpg -->
+
+### 8.4. Resumen de la validación
+
+Para reunir las comprobaciones en una sola salida:
+
+```bash
+id dev1
+id externo1
+findmnt -M /mnt/desarrollo
+sudo -u dev1 -- cat /mnt/desarrollo/prueba_dev1.txt
+sudo -u externo1 -- touch /mnt/desarrollo/intento_externo1.txt
+```
+
+La captura muestra las dos identidades, el montaje NFSv4.2, la lectura correcta de `dev1` y la denegación a `externo1`.
+
+<!-- CAPTURA 4: colocar aquí 04-validacion-completa.jpg -->
+
+| Prueba | Resultado |
+|---|---|
+| Identidad LDAP de `dev1` | Correcta |
+| Identidad LDAP de `externo1` | Correcta |
+| Recurso remoto montado | Correcto, NFSv4.2 |
+| Lectura y escritura de `dev1` | Permitidas |
+| Listado y creación de archivos por `externo1` | Denegados |
+| Archivo comprobado en servidor | UID 11001 y GID 20001 |
+
+Estas pruebas validan permisos de archivos. Con `sec=sys`, NFS utiliza los UID/GID del cliente; no comprueba una contraseña LDAP en cada acceso. No es una protección suficiente frente a un administrador malicioso del cliente. Un entorno de producción requiere un diseño adicional de autenticación y protección de las comunicaciones.
+
+## 9. Copia del directorio antes de instalar FusionDirectory
+
+Antes de introducir esquemas o permitir cambios desde el panel, se guardaron copias de configuración y datos:
+
+```bash
+sudo install -d -m 700 /root/backup-ldap
+sudo sh -c 'umask 077; slapcat -n 0 > /root/backup-ldap/config.ldif'
+sudo sh -c 'umask 077; slapcat -b "dc=planetafp,dc=local" > /root/backup-ldap/datos.ldif'
+sudo ls -lh /root/backup-ldap/
+```
+
+La captura muestra ambos archivos, con permisos restringidos y tamaños distintos de cero. Esto demuestra su creación, no una restauración probada. Para una copia coherente se debe evitar la modificación concurrente del directorio durante la exportación y planificar su recuperación.
+
+<!-- CAPTURA 5: colocar aquí 05-copia-ldap.jpg -->
+
+No subir estos LDIF a GitHub: pueden contener datos personales, hashes y configuración sensible.
+
+## 10. FusionDirectory: comprobación y trabajo pendiente
+
+### 10.1. Estado del servidor
+
+Se comprobó el sistema y la disponibilidad de paquetes:
+
+```bash
+cat /etc/os-release
+apt-cache policy fusiondirectory fusiondirectory-schema fusiondirectory-plugin-posix
+```
+
+La máquina utiliza Debian GNU/Linux 13 Trixie. La consulta no encuentra `fusiondirectory` ni `fusiondirectory-plugin-posix`, y `fusiondirectory-schema` no tiene candidato.
+
+<!-- CAPTURA 1: colocar aquí 01-debian-paquetes-fusiondirectory.jpg -->
+
+Esta salida demuestra que los paquetes no están disponibles en los repositorios configurados. No demuestra que sea imposible instalar FusionDirectory en cualquier entorno Trixie.
+
+No se añadieron repositorios antiguos de otras distribuciones para forzar la instalación. Tampoco se importaron esquemas ni se completó el asistente web. La parte de FusionDirectory queda pendiente de elegir una combinación de sistema, PHP, versión del panel y repositorio compatible.
+
+### 10.2. Procedimiento para continuar
+
+1. Confirmar con la documentación de la versión elegida la plataforma y PHP admitidos.
+2. Mantener el servidor LDAP/NFS actual. Si es necesario, alojar el panel en otra VM compatible.
+3. Comprobar la firma y la huella de la clave del repositorio oficial. Usar un keyring dedicado y `signed-by`.
+4. Revisar los candidatos y las dependencias antes de instalar Apache, PHP, FusionDirectory y sus plugins.
+5. Guardar una instantánea y las copias LDAP antes de cargar esquemas.
+6. Importar únicamente los esquemas que indique la versión instalada, verificando primero los existentes.
+
+No se incluye una línea de repositorio inventada para Trixie. Esta sección debe completarse con los comandos realmente ejecutados cuando se resuelva la compatibilidad.
+
+### 10.3. Gestión de esquemas
+
+La herramienta prevista en el enunciado es `fusiondirectory-schema-manager`. Antes de importar:
+
+```bash
+fusiondirectory-schema-manager --help
+ls -l /etc/ldap/schema/fusiondirectory/
+sudo ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config -s one dn cn
+```
+
+En versiones que documenten `--insert-schema`, la forma del comando es:
+
+```bash
+sudo fusiondirectory-schema-manager --insert-schema /ruta/al/esquema.schema
+```
+
+Se deben comprobar los archivos de núcleo, configuración, plantillas y plugins que correspondan. No duplicar esquemas ya cargados. Si el panel se instala en otra VM, la importación tiene que hacerse sobre el OpenLDAP del servidor, no contra una base local distinta.
+
+Este bloque es una guía para la fase pendiente; no es un registro de importaciones realizadas.
+
+### 10.4. Asistente web
+
+Una vez instalada una versión compatible, se documentarán estos pasos. Las pantallas pueden variar entre versiones:
+
+| Paso | Qué comprobar |
+|---|---|
+| Bienvenida y token | Crear el archivo y el token exactamente como los indique el asistente |
+| Idioma | Seleccionar el idioma usado en el manual |
+| Dependencias | Resolver extensiones PHP y permisos pendientes |
+| Conexión LDAP | Usar el servidor correcto, Base DN y credenciales autorizadas; proteger la conexión remota con TLS |
+| Ramas y configuración | Seleccionar `ou=personas` y `ou=grupos`, sin duplicar entradas existentes |
+| Inspección y finalización | Revisar cambios, guardar el archivo generado y proteger la configuración |
+
+El fichero `/etc/fusiondirectory/fusiondirectory.conf` debe proceder del asistente, no de un XML mínimo escrito a mano. No se publica en el repositorio. Los tokens y las contraseñas se ocultan en las capturas.
+
+### 10.5. Administración visual y prueba final
+
+Para cerrar el módulo del panel será necesario:
+
+1. Iniciar sesión y comprobar que se ven las entradas existentes.
+2. Crear un usuario POSIX desde la interfaz, por ejemplo `dev2`, con UID libre y grupo `desarrollo`.
+3. Crear o modificar un grupo desde la interfaz y conservar la evidencia.
+4. Consultar el usuario desde el cliente con `getent passwd dev2` e `id dev2`.
+5. Crear y leer un archivo en NFS con esa identidad.
+
+El alta por LDIF de este manual no sustituye a la demostración de administración visual que pide el profesor.
+
+## 11. Incidencias y soluciones
+
+| Incidencia | Actuación |
+|---|---|
+| Error de resolución al ejecutar `apt update` | Separar conectividad IP de DNS y revisar el gestor del resolver |
+| `getent group desarrollo` no devuelve nada | Consultar LDAP directamente, revisar NSS y reiniciar nslcd |
+| `No such object` en `ldapsearch` | Revisar Base DN; en una prueba faltaba el argumento `-b` |
+| La carpeta compartida no existe | Crear la ruta con `mkdir -p` antes de asignar permisos |
+| `exportfs` no se encuentra | Revisar el nombre del comando y el paquete del servidor NFS |
+| `access denied` junto a `Device or resource busy` al montar | Comprobar primero `findmnt`; en este caso el recurso ya estaba montado y funcionaba con dev1 |
+| Paquetes de FusionDirectory no encontrados | Registrar la limitación y validar plataforma/repositorio antes de continuar |
+
 </details>
