@@ -1195,30 +1195,30 @@ Es la pantalla de entrada al área del cliente. Reúne indicadores ilustrativos 
 ### 2.8. Calendario
 Muestra un calendario principal con días destacados y una agenda lateral para representar próximas actividades o revisiones. Incluye controles visuales de navegación, sin vincularse a eventos reales.
 
-<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170701.png" alt="Inicio en baja fidelidad" width="500">
 
-<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20172102.png" alt="Inicio en baja fidelidad" width="250">
 
 ###2.9. Informes
 Presenta un listado de documentos con referencia, nombre, estado y acciones previstas de consulta o descarga. También reserva espacios para búsqueda y filtrado.
 
-<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170651.png" alt="Inicio en baja fidelidad" width="500">
 
-<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20172113.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.10. Hallazgos
 Organiza las observaciones en una tabla con referencia, descripción, prioridad y estado. Los ejemplos son ilustrativos y la prioridad queda pendiente de valoración técnica. En las capturas actuales, esta pantalla aparece titulada «Notificaciones»; el nombre deberá unificarse.
 
-<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170717.png" alt="Inicio en baja fidelidad" width="500">
 
-<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20172125.png" alt="Inicio en baja fidelidad" width="250">
 
 ### 2.11. Historial
 Representa una secuencia de actividad del proyecto, como la incorporación de informes, la programación de revisiones, los cambios de alcance y el registro de consultas.
 
-<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170627.png" alt="Inicio en baja fidelidad" width="500">
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20170726.png" alt="Inicio en baja fidelidad" width="500">
 
-<img src="capturas/Captura%20de%20pantalla%202026-10-28%20171625.png" alt="Inicio en baja fidelidad" width="250">
+<img src="capturas/Captura%20de%20pantalla%202026-10-28%20172138.png" alt="Inicio en baja fidelidad" width="250">
 
  ## 3. Wireframes de alta fidelidad y baja fidelidad
  Los wireframes de baja fidelidad permitieron revisar la distribución del espacio, la jerarquía de la información y la ubicación de menús, botones, formularios y bloques de contenido.
