@@ -2352,9 +2352,6 @@ sudo hostnamectl set-hostname origen
 
 Tras cerrar y abrir la terminal, el prompt pasa a `vboxuser@origen`.
 
-📷 **Captura 2:** terminal mostrando el prompt `vboxuser@origen`.
-
-*Captura 2*
 
 ### 2.3 Consultar la dirección IP
 
