@@ -2314,3 +2314,334 @@ El alta por LDIF de este manual no sustituye a la demostración de administraci�
 | Paquetes de FusionDirectory no encontrados | Registrar la limitación y validar plataforma/repositorio antes de continuar |
 
 </details>
+
+<details>
+<summary><h2><b> 🔐 Playbook Backup: rsync/Crontab</b></h2></summary>
+
+1. Objetivo
+Realizar copias de seguridad (backup) full e incremental con rsync, primero en una sola máquina y después entre dos máquinas por SSH, comprobar que se mantienen los atributos y usuarios de los ficheros, y realizar una recuperación invirtiendo origen y destino. Por indicación de la profesora, esta práctica no incluye la parte de tar.gz.
+2. Preparación del entorno
+2.1 Crear la carpeta origen y los ficheros
+Se crea la carpeta origen y diez ficheros con touch file{1..10}. A file1 se le añade contenido para que no esté vacío.
+mkdir ~/origen
+cd ~/origen
+touch file{1..10}
+echo "test1" > file1
+ls -l
+Resultado esperado: diez ficheros, file1 con 6 bytes y file2 a file10 con 0 bytes.
+📷 CAPTURA 1: salida del comando ls -l dentro de ~/origen.
+2.2 Cambiar el nombre de la máquina
+Para distinguir las dos máquinas virtuales, esta se renombra como origen.
+sudo hostnamectl set-hostname origen
+Tras cerrar y abrir la terminal, el prompt pasa a vboxuser@origen.
+📷 CAPTURA 2: terminal mostrando el prompt vboxuser@origen.
+2.3 Consultar la dirección IP
+ip a
+Se anota la IP de la interfaz que no es lo (del tipo 192.168.56.x).
+📷 CAPTURA 3: salida de ip a con la IP visible.
+3. Teoría: rsync y las copias incrementales
+rsync compara origen y destino fichero a fichero, por defecto según tamaño y fecha de modificación. Si coinciden, el fichero se omite; si no, se copia (y en los ficheros modificados puede transferir solo los bloques que han cambiado).
+• La primera ejecución copia todo: es un backup full.
+• Las siguientes ejecuciones solo copian lo nuevo o modificado: son backups incrementales.
+3.1 Opciones del comando rsync -avzh
+Opción
+Significado
+-a
+Modo archivo: recursivo y conserva permisos, fechas, propietario, grupo y enlaces
+-v
+Muestra los ficheros que se copian
+-z
+Comprime los datos durante la transferencia
+-h
+Muestra los tamaños en formato legible
+3.2 ¿Es lo mismo con barra final que sin ella?
+rsync -avzh carpeta_origen/ carpeta_destino/
+rsync -avzh carpeta_origen  carpeta_destino/
+No. La barra final en el origen cambia el resultado:
+• Con barra (origen/) se copia el contenido de la carpeta: los ficheros quedan en destino/file1.
+• Sin barra (origen) se copia la carpeta entera: los ficheros quedan en destino/origen/file1.
+Esto se comprobará en la práctica en los siguientes pasos.
+4. Backup full con rsync (prueba en local)
+Mientras la segunda máquina no está configurada, se prueba en local. Los comandos son los mismos que se usarán por red, cambiando solo el destino.
+mkdir ~/destino
+rsync -avzh ~/origen/ ~/destino/
+ls -l ~/destino
+📷 CAPTURA 4: salida del comando rsync -avzh ~/origen/ ~/destino/.
+📷 CAPTURA 5: salida de ls -l ~/destino con los ficheros copiados.
+5. Incidencia: rsync no está instalado
+Al ejecutar el backup full apareció el error bash: rsync: command not found. La máquina estaba en red solo anfitrión, sin acceso a internet, y rsync no viene instalado por defecto.
+📷 CAPTURA 6: el error rsync: command not found.
+5.1 Solución: acceso temporal a internet
+1. Se apaga la máquina virtual con sudo poweroff.
+2. En VirtualBox, en Configuración → Red → Adaptador 1, se cambia de Solo anfitrión a NAT.
+3. Se arranca la máquina y se comprueba la conexión:
+ping -c 3 deb.debian.org
+📷 CAPTURA 7: salida del ping con respuestas correctas.
+4. Se instalan rsync y el servidor SSH (necesario más adelante para copiar entre las dos máquinas):
+sudo apt update
+sudo apt install -y rsync openssh-server
+📷 CAPTURA 8: instalación de los paquetes con apt.
+5. Se comprueba la instalación:
+rsync --version | head -1
+Resultado: rsync version 3.5.0  protocol version 32.
+📷 CAPTURA 9: salida de rsync --version.
+Nota: el adaptador se mantiene en NAT hasta terminar las pruebas locales y clonar la máquina, para que la segunda tenga ya todo instalado.
+6. Resultado del backup full y comprobación de atributos
+Tras instalar rsync se ejecutó el backup full correctamente:
+rsync -avzh ~/origen/ ~/destino/
+ls -l ~/destino
+rsync listó los diez ficheros copiados (file1 a file10) y mostró el resumen de bytes enviados y recibidos. Es la primera ejecución, así que se copió todo el contenido: un backup full.
+Nota: un primer intento falló por escribir ~avzh (con tilde) en lugar de -avzh (con guion). rsync interpretó ~avzh como un fichero y no copió nada.
+Comprobación de los atributos en ~/destino comparados con ~/origen:
+Atributo
+¿Se mantiene?
+Evidencia
+Permisos
+Sí
+Siguen siendo -rw-rw-r--
+Fecha de modificación
+Sí
+file1 conserva las 16:56 y el resto las 16:55
+Propietario y grupo
+Sí
+Siguen siendo vboxuser vboxuser
+Tamaño
+Sí
+file1 6 bytes, el resto 0 bytes
+Se mantienen gracias a la opción -a (archive), que equivale a -rlptgoD: recursivo, enlaces simbólicos, permisos, fechas, grupo, propietario y ficheros especiales.
+Nota sobre usuarios: en una copia local con el mismo usuario, el propietario coincide siempre. Para conservar propietarios distintos (por ejemplo, ficheros de root) hay que ejecutar rsync con sudo.
+7. Backup incremental con rsync
+Para probar el incremental se modifica un fichero existente y se crea uno nuevo en origen, y se vuelve a ejecutar rsync con el mismo comando:
+echo "cambio" >> ~/origen/file1
+touch ~/origen/file11
+rsync -avzh ~/origen/ ~/destino/
+cat ~/destino/file1
+📷 CAPTURA 10: los comandos echo y touch seguidos del rsync incremental.
+7.1 Resultado
+rsync solo listó y transfirió dos ficheros: file1 (modificado) y file11 (nuevo). Los otros nueve no se tocaron porque su tamaño y fecha coincidían en origen y destino. El tamaño total pasó a 13 bytes.
+Fichero
+Situación en origen
+¿Se transfiere?
+file1
+Modificado (se añadió una línea)
+Sí
+file11
+Nuevo
+Sí
+file2 a file10
+Sin cambios
+No
+La comprobación con cat ~/destino/file1 muestra el contenido original más la línea cambio, así que las modificaciones del origen se reflejan en el destino al volver a ejecutar rsync.
+📷 CAPTURA 11: salida de cat ~/destino/file1 con el cambio reflejado.
+7.2 ¿Cómo funciona entonces el incremental?
+rsync no guarda un historial de copias: en cada ejecución compara origen y destino y transfiere solo la diferencia. El destino queda siempre como una réplica actual del origen. Si se borra un fichero en origen, no se borra en destino salvo que se use la opción --delete.
+8. Diferencia entre origen con barra y sin barra
+Para comprobar si los dos comandos del enunciado son equivalentes, se ejecuta rsync sin la barra final en el origen, hacia una carpeta nueva:
+mkdir ~/destino2
+rsync -avzh ~/origen ~/destino2/
+ls -l ~/destino2
+ls -l ~/destino2/origen
+📷 CAPTURA 12: salida del rsync sin barra final (las rutas aparecen como origen/file1, etc.).
+📷 CAPTURA 13: salida de ls -l ~/destino2 y de ls -l ~/destino2/origen.
+8.1 Resultado
+rsync creó dentro de destino2 una carpeta llamada origen y metió los ficheros dentro (destino2/origen/file1). En el backup anterior, con barra final, los ficheros quedaron directamente en destino/file1.
+Comando
+Qué copia
+Ruta resultante
+rsync -avzh origen/ destino/
+El contenido de la carpeta
+destino/file1
+rsync -avzh origen destino/
+La carpeta entera
+destino/origen/file1
+Conclusión: los dos comandos no son equivalentes. La barra final en el origen decide si se copia el contenido o la carpeta con su nombre. En el destino la barra no cambia el resultado.
+En esta copia también se mantuvieron los atributos: la carpeta origen conserva permisos drwxrwxr-x y propietario vboxuser, y los ficheros sin cambios conservan su fecha original (16:55).
+9. Recuperación del contenido con rsync
+Para simular una pérdida de datos se borran tres ficheros de origen y se recuperan desde el backup. La recuperación consiste en invertir origen y destino en el comando de rsync:
+rm ~/origen/file2 ~/origen/file3 ~/origen/file11
+ls ~/origen
+rsync -avzh ~/destino/ ~/origen/
+ls ~/origen
+📷 CAPTURA 14: el rm y el ls ~/origen donde se ve que faltan file2, file3 y file11.
+📷 CAPTURA 15: salida del rsync -avzh ~/destino/ ~/origen/ (recuperación).
+📷 CAPTURA 16: ls ~/origen final con los tres ficheros de nuevo presentes.
+9.1 Resultado
+rsync transfirió únicamente file11, file2 y file3, que eran los que faltaban en la carpeta de origen. Los demás ficheros ya coincidían y no se tocaron. Tras la recuperación, ls ~/origen vuelve a mostrar file1 a file11 completos.
+Dirección
+Comando
+Uso
+Backup
+rsync -avzh ~/origen/ ~/destino/
+Guardar los datos
+Recuperación
+rsync -avzh ~/destino/ ~/origen/
+Restaurar los datos desde la copia
+La recuperación es en realidad otra copia incremental en sentido contrario. Por eso solo se transfieren los ficheros perdidos.
+10. Práctica con dos máquinas: preparación
+A partir de aquí se repite el proceso con dos máquinas virtuales: origen (con los ficheros) y destino (recibe la copia). La comunicación se hace por SSH, que rsync usa por defecto cuando la ruta lleva el formato usuario@ip:ruta.
+10.1 Creación de la segunda máquina
+1. Se apaga la máquina origen y se clona en VirtualBox (clic derecho → Clonar) como clon completo, generando nuevas direcciones MAC para evitar IPs duplicadas.
+2. Las dos máquinas se configuran con el adaptador en Solo anfitrión, en la misma red, para que se vean entre sí y con el equipo anfitrión.
+3. En la máquina clonada se cambia el nombre y se vacía la carpeta destino heredada del clon:
+sudo hostnamectl set-hostname destino
+rm -rf ~/destino/*
+10.2 Direcciones IP
+Máquina
+Interfaz
+IP
+origen
+enp0s3
+192.168.56.102
+destino
+enp0s3
+192.168.56.103
+📷 CAPTURA 17: ip a en la máquina origen (se ve 192.168.56.102).
+📷 CAPTURA 18: ip a en la máquina destino (se ve 192.168.56.103).
+10.3 Comprobación del servicio SSH y la conexión
+En destino se comprueba que el servicio SSH está activo:
+sudo systemctl status ssh
+📷 CAPTURA 19: salida de systemctl status ssh con active (running).
+En origen se comprueba la conectividad y se accede por SSH a destino:
+ping -c 3 192.168.56.103
+ssh vboxuser@192.168.56.103
+📷 CAPTURA 20: salida del ping con respuestas correctas.
+📷 CAPTURA 21: acceso por SSH, con el prompt cambiando a vboxuser@destino.
+La primera conexión pide confirmar la huella del equipo (yes) y la contraseña del usuario. Con la conexión funcionando, ya se puede usar rsync entre las dos máquinas.
+11. Backup full por red con rsync
+Con SSH funcionando, el backup full se hace desde origen hacia la máquina destino. El formato usuario@ip:ruta indica a rsync que el destino es remoto:
+rsync -avzh ~/origen/ vboxuser@192.168.56.103:~/destino/
+rsync pide la contraseña de vboxuser en destino y transfiere los ficheros por SSH (cifrados y comprimidos gracias a -z).
+📷 CAPTURA 22: salida del rsync ejecutado en origen hacia la IP de destino.
+En destino se comprueba que los ficheros han llegado:
+ls -l ~/destino
+📷 CAPTURA 23: ls -l ~/destino en la máquina destino, con los 11 ficheros (file1 a file11).
+11.1 Resultado
+Los once ficheros se copiaron correctamente a la otra máquina. Como es la primera copia hacia ese destino, rsync transfirió todo: un backup full. Los atributos se conservan igual que en la copia local gracias a -a.
+12. Backup incremental por red con rsync
+En origen se modifica un fichero, se crea uno nuevo y se repite el mismo comando de rsync:
+echo "cambio por red" >> ~/origen/file2
+touch ~/origen/file12
+rsync -avzh ~/origen/ vboxuser@192.168.56.103:~/destino/
+📷 CAPTURA 24: salida del rsync incremental en origen (solo aparecen file2 y file12).
+En destino se comprueba el resultado:
+cat ~/destino/file2
+ls -l ~/destino
+📷 CAPTURA 25: cat ~/destino/file2 mostrando la línea cambio por red.
+📷 CAPTURA 26: ls -l ~/destino con file2 y file12 con fecha reciente.
+12.1 Resultado
+En destino aparecen file12 (nuevo, vacío porque se creó con touch) y file2 (modificado), ambos con fecha reciente, mientras que el resto de ficheros conserva su fecha original. Es decir, rsync solo transfirió lo nuevo o modificado, también a través de la red, y los cambios del origen se reflejan en el destino.
+12.2 Ejecución sin cambios
+Si se vuelve a lanzar el mismo comando sin modificar nada en origen, rsync no transfiere ningún fichero, porque detecta que destino ya está actualizado.
+📷 CAPTURA 27 (opcional): rsync repetido sin cambios, sin ficheros en la lista.
+13. Recuperación por red con rsync
+Para simular una pérdida de datos, en la máquina origen se borran ficheros y se recuperan desde la máquina destino. La recuperación invierte origen y destino: ahora el equipo remoto es el origen del rsync y la carpeta local es el destino.
+rm ~/origen/file2 ~/origen/file3
+ls ~/origen
+rsync -avzh vboxuser@192.168.56.103:~/destino/ ~/origen/
+ls ~/origen
+📷 CAPTURA 28: el rm y el ls ~/origen donde se ve que faltan ficheros.
+📷 CAPTURA 29: salida del rsync de recuperación, con el prompt vboxuser@origen visible.
+📷 CAPTURA 30: ls ~/origen final con los ficheros recuperados.
+13.1 Resultado
+rsync pidió la contraseña de vboxuser en destino y transfirió únicamente tres ficheros: file12, file2 y file3. Los demás ya estaban en origen y no se tocaron. El último ls muestra la carpeta de nuevo completa.
+Operación
+Comando (ejecutado en origen)
+Backup
+rsync -avzh ~/origen/ vboxuser@192.168.56.103:~/destino/
+Recuperación
+rsync -avzh vboxuser@192.168.56.103:~/destino/ ~/origen/
+En los dos casos el comando se ejecuta desde la máquina origen. Lo único que cambia es el orden de las rutas.
+13.2 Observación: sesión SSH abierta
+Durante la práctica hubo confusión porque, tras probar la conexión con ssh vboxuser@192.168.56.103, la sesión quedó abierta y los comandos siguientes se ejecutaron en destino aunque se estuviera mirando la ventana de origen. La solución es cerrar la sesión con exit y comprobar la máquina con hostname -I (origen 192.168.56.102, destino 192.168.56.103). El comando rsync no necesita abrir ssh antes: usa SSH internamente.
+14. Conclusiones
+Respuestas a las preguntas del enunciado, con lo observado en la práctica:
+Pregunta
+Respuesta
+¿Cómo funciona rsync en los backups incrementales?
+Compara origen y destino por tamaño y fecha y transfiere solo lo nuevo o modificado. La primera ejecución es el backup full.
+¿Es lo mismo origen/ que origen?
+No. Con barra copia el contenido de la carpeta; sin barra copia la carpeta entera (destino/origen/).
+¿Se mantienen los atributos y los usuarios?
+Sí, gracias a -a: permisos, fechas, propietario y grupo. Para conservar propietarios distintos hay que ejecutar rsync con sudo.
+¿Se refleja en destino un cambio hecho en origen?
+Sí, al volver a ejecutar rsync se copia el fichero modificado.
+¿Cómo se recuperan los datos?
+Invirtiendo origen y destino en el comando de rsync, tanto en local como entre dos máquinas.
+15. Automatización con cron
+Objetivo: que el backup se ejecute solo, por ejemplo a las 2:00 de la madrugada, sin ejecutar comandos a mano en ninguna de las dos máquinas.
+15.1 Acceso SSH sin contraseña
+Cron no puede escribir contraseñas, así que origen debe entrar en destino con una clave SSH. En origen:
+ssh-keygen -t ed25519
+ssh-copy-id vboxuser@192.168.56.103
+ssh vboxuser@192.168.56.103 hostname
+El último comando debe responder con el nombre de destino sin pedir contraseña y sin dejar la sesión abierta.
+📷 CAPTURA 31: salida de los tres comandos, sin pedir contraseña en el último.
+15.2 Script de backup
+En origen se crea ~/backup.sh, que ejecuta rsync y guarda el resultado en un log:
+#!/bin/bash
+ORIGEN="/home/vboxuser/origen/"
+DESTINO="vboxuser@192.168.56.103:/home/vboxuser/destino/"
+LOG="/home/vboxuser/backup.log"
+
+echo "=== Backup iniciado: $(date '+%F %T') ===" >> "$LOG"
+rsync -avzh "$ORIGEN" "$DESTINO" >> "$LOG" 2>&1
+echo "=== Fin, codigo de salida: $? ===" >> "$LOG"
+Se usan rutas completas en lugar de ~ porque cron se ejecuta con un entorno mínimo. Se le da permiso de ejecución y se prueba a mano:
+chmod +x ~/backup.sh
+~/backup.sh
+cat ~/backup.log
+📷 CAPTURA 32: contenido de backup.sh (por ejemplo con cat ~/backup.sh).
+📷 CAPTURA 33: cat ~/backup.log con codigo de salida: 0.
+Un código de salida 0 indica que rsync terminó sin errores.
+15.3 Servicio cron
+systemctl status cron
+📷 CAPTURA 34: cron.service con active (running) y enabled.
+La programación (crontab) se continúa en el siguiente apartado.
+16. Programación del backup con crontab
+16.1 Formato de una línea de crontab
+Cada línea tiene cinco campos de tiempo separados por espacios, seguidos del comando:
+Campo
+Valores
+Significado
+1
+0-59
+Minuto
+2
+0-23
+Hora
+3
+1-31
+Día del mes
+4
+1-12
+Mes
+5
+0-7
+Día de la semana (0 y 7 son domingo)
+El asterisco * significa "cualquier valor". Por ejemplo, 0 2 * * * es "a las 2:00, todos los días".
+16.2 Prueba: backup cada minuto
+Para comprobar que cron funciona sin esperar a la noche, se programa primero el script cada minuto. En origen:
+crontab -e
+Se elige el editor nano y se añade al final:
+* * * * * /home/vboxuser/backup.sh
+Incidencia: la primera vez cron rechazó la línea con el error bad hour. Se debió a un fallo al escribirla: los cinco campos deben ir separados por un espacio. Al reescribirla a mano se instaló correctamente (crontab: installing new crontab).
+📷 CAPTURA 35: crontab -l mostrando la línea de prueba.
+Para ver el backup automático en acción se crea un fichero nuevo en origen y se espera un par de minutos:
+touch ~/origen/prueba_cron
+cat ~/backup.log
+📷 CAPTURA 36: cat ~/backup.log con una entrada por cada minuto y codigo de salida: 0.
+En la máquina destino se comprueba que el fichero ha llegado sin intervención manual:
+ls ~/destino | grep prueba_cron
+📷 CAPTURA 37: ls en destino con prueba_cron.
+16.3 Programación definitiva: todos los días a las 2:00
+Una vez comprobado, se sustituye la línea de prueba por la definitiva (se edita la línea, no se añade otra):
+0 2 * * * /home/vboxuser/backup.sh
+crontab -l
+📷 CAPTURA 38: crontab -l con la única línea 0 2 * * * /home/vboxuser/backup.sh.
+16.4 Consideraciones
+• Las dos máquinas deben estar encendidas a la hora programada. Cron no recupera tareas de cuando la máquina estaba apagada.
+• La IP de destino es dinámica (DHCP). Si cambia, el script apuntaría a una dirección incorrecta y el backup fallaría. Una solución es fijar una IP estática en destino.
+• El log debe revisarse: cat ~/backup.log muestra cada ejecución. Un código de salida distinto de 0 indica un fallo.
+• Acceso sin contraseña: sin la clave SSH del apartado 15.1, rsync pediría contraseña y el backup automático no funcionaría.
+
+</details>
